@@ -22,11 +22,13 @@ func main() {
 		errorLog.Fatal(err)
 	}
 
-	problemRepository := repositories.NewPGProblemRepository(db)
+	topicRepository := repositories.NewPGTopicRepository(db)
+	problemRepository := repositories.NewPGProblemRepository(db, topicRepository)
 
 	app := application{
 		errorLog:          errorLog,
 		infoLog:           infoLog,
+		topicRepository:   topicRepository,
 		problemRepository: problemRepository,
 	}
 

@@ -2,24 +2,28 @@ package repositories
 
 import (
 	"database/sql"
-	"github.com/sorawaslocked/CodeRivals/internal/dtos"
 	"github.com/sorawaslocked/CodeRivals/internal/entities"
 )
 
 type ProblemRepository interface {
 	Count() (uint64, error)
-	Create(request *dtos.ProblemCreateRequest) error
+	Create(request *entities.Problem) error
 	Get(id uint64) (*entities.Problem, error)
 	GetAll() ([]*entities.Problem, error)
+	Update(problem *entities.Problem) error
 	Delete(id uint64) error
 }
 
 type PGProblemRepository struct {
-	db *sql.DB
+	db              *sql.DB
+	topicRepository TopicRepository
 }
 
-func NewPGProblemRepository(db *sql.DB) ProblemRepository {
-	return &PGProblemRepository{db: db}
+func NewPGProblemRepository(db *sql.DB, topicRepo TopicRepository) ProblemRepository {
+	return &PGProblemRepository{
+		db:              db,
+		topicRepository: topicRepo,
+	}
 }
 
 func (repo *PGProblemRepository) Count() (uint64, error) {
@@ -34,7 +38,7 @@ func (repo *PGProblemRepository) Count() (uint64, error) {
 	return count, nil
 }
 
-func (repo *PGProblemRepository) Create(request *dtos.ProblemCreateRequest) error {
+func (repo *PGProblemRepository) Create(problem *entities.Problem) error {
 	tx, err := repo.db.Begin()
 	if err != nil {
 		return err
@@ -46,12 +50,12 @@ func (repo *PGProblemRepository) Create(request *dtos.ProblemCreateRequest) erro
 	VALUES ($1, $2, $3, NOW(), NOW()) RETURNING id`
 	var problemId uint64
 
-	err = tx.QueryRow(problemStmt, request.Title, request.Description, request.Difficulty).Scan(&problemId)
+	err = tx.QueryRow(problemStmt, problem.Title, problem.Description, problem.Difficulty).Scan(&problemId)
 	if err != nil {
 		return err
 	}
 
-	for _, topic := range request.Topics {
+	for _, topic := range problem.Topics {
 		topicStmt := `INSERT INTO problem_topics (problem_id, topic_id)
 		VALUES ($1, $2)`
 
@@ -68,14 +72,154 @@ func (repo *PGProblemRepository) Create(request *dtos.ProblemCreateRequest) erro
 }
 
 func (repo *PGProblemRepository) Get(id uint64) (*entities.Problem, error) {
+	prob := &entities.Problem{}
 
-	return nil, nil
+	probStmt := `SELECT title, description, difficulty, created_at, updated_at
+	FROM problems WHERE id = $1`
+
+	err := repo.db.QueryRow(probStmt, id).Scan(
+		&prob.Title,
+		&prob.Description,
+		&prob.Difficulty,
+		&prob.CreatedAt,
+		&prob.UpdatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var topics []*entities.Topic
+	topics, err = repo.topicRepository.GetAllForProblem(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	prob.Topics = topics
+
+	return prob, nil
 }
 
 func (repo *PGProblemRepository) GetAll() ([]*entities.Problem, error) {
-	return nil, nil
+	probStmt := `SELECT id, title, description, difficulty, created_at, updated_at
+	FROM problems`
+
+	rows, err := repo.db.Query(probStmt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var probs []*entities.Problem
+
+	for rows.Next() {
+		prob := &entities.Problem{}
+
+		err = rows.Scan(
+			&prob.ID,
+			&prob.Title,
+			&prob.Description,
+			&prob.Difficulty,
+			&prob.CreatedAt,
+			&prob.UpdatedAt)
+
+		if err != nil {
+			return nil, err
+		}
+
+		var topics []*entities.Topic
+		topics, err = repo.topicRepository.GetAllForProblem(prob.ID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		prob.Topics = topics
+		probs = append(probs, prob)
+	}
+
+	return probs, nil
+}
+
+func (repo *PGProblemRepository) Update(prob *entities.Problem) error {
+	tx, err := repo.db.Begin()
+
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	stmt := `UPDATE problems
+	SET title = $1, description = $2, difficulty = $3, updated_at = NOW()
+	WHERE id = $4`
+
+	_, err = tx.Exec(stmt, prob.Title, prob.Description, prob.Difficulty, prob.ID)
+
+	if err != nil {
+		return err
+	}
+
+	deleteTopicsStmt := `DELETE FROM problem_topics WHERE problem_id = $1`
+
+	_, err = tx.Exec(deleteTopicsStmt, prob.ID)
+
+	if err != nil {
+		return err
+	}
+
+	for _, topic := range prob.Topics {
+		insertTopicsStmt := `INSERT INTO problem_topics (problem_id, topic_id)
+		VALUES ($1, $2)`
+
+		_, err = tx.Exec(insertTopicsStmt, prob.ID, topic.ID)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	err = tx.Commit()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (repo *PGProblemRepository) Delete(id uint64) error {
+	tx, err := repo.db.Begin()
+
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	topicsStmt := `DELETE FROM problem_topics WHERE problem_id = $1`
+
+	_, err = tx.Exec(topicsStmt, id)
+
+	if err != nil {
+		return err
+	}
+
+	problemStmt := `DELETE FROM problems WHERE id = $1`
+
+	_, err = tx.Exec(problemStmt, id)
+
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

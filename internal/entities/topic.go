@@ -1,6 +1,6 @@
 package entities
 
 type Topic struct {
-	ID   int    `json:"id"`
+	ID   uint64 `json:"id"`
 	Name string `json:"name"`
 }
