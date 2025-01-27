@@ -34,7 +34,7 @@ func main() {
 		userRepository:    userRepository,
 	}
 
-	addr := flag.String("addr", ":8081", "Server port")
+	addr := flag.String("addr", ":8080", "Server port")
 
 	flag.Parse()
 
