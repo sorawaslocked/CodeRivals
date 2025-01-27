@@ -24,15 +24,17 @@ func main() {
 
 	topicRepository := repositories.NewPGTopicRepository(db)
 	problemRepository := repositories.NewPGProblemRepository(db, topicRepository)
+	userRepository := repositories.NewPGUserRepository(db)
 
 	app := application{
 		errorLog:          errorLog,
 		infoLog:           infoLog,
 		topicRepository:   topicRepository,
 		problemRepository: problemRepository,
+		userRepository:    userRepository,
 	}
 
-	addr := flag.String("addr", ":8080", "Server port")
+	addr := flag.String("addr", ":8081", "Server port")
 
 	flag.Parse()
 

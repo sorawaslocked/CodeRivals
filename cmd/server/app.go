@@ -10,4 +10,5 @@ type application struct {
 	infoLog           *log.Logger
 	topicRepository   repositories.TopicRepository
 	problemRepository repositories.ProblemRepository
+	userRepository    repositories.UserRepository
 }
