@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	_ "github.com/lib/pq"
+	"github.com/sorawaslocked/CodeRivals/internal/app"
 	"github.com/sorawaslocked/CodeRivals/internal/repositories"
 	"log"
 	"net/http"
@@ -26,12 +27,12 @@ func main() {
 	problemRepository := repositories.NewPGProblemRepository(db, topicRepository)
 	userRepository := repositories.NewPGUserRepository(db)
 
-	app := application{
-		errorLog:          errorLog,
-		infoLog:           infoLog,
-		topicRepository:   topicRepository,
-		problemRepository: problemRepository,
-		userRepository:    userRepository,
+	app := app.Application{
+		ErrorLog:          errorLog,
+		InfoLog:           infoLog,
+		TopicRepository:   topicRepository,
+		ProblemRepository: problemRepository,
+		UserRepository:    userRepository,
 	}
 
 	addr := flag.String("addr", ":8080", "Server port")
@@ -40,14 +41,15 @@ func main() {
 
 	srv := &http.Server{
 		Addr:     *addr,
-		ErrorLog: app.errorLog,
+		ErrorLog: app.ErrorLog,
+		Handler:  app.Routes(),
 	}
 
 	infoLog.Printf("Server started on %s", *addr)
 	err = srv.ListenAndServe()
 
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		app.errorLog.Fatal(err)
+		app.ErrorLog.Fatal(err)
 	}
 }
 
