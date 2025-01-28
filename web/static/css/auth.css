@@ -1,3 +1,4 @@
+/* web/static/css/auth.css */
 .auth-container {
     display: flex;
     justify-content: center;
@@ -45,6 +46,41 @@
     box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
 }
 
+/* Form hint text for registration requirements */
+.form-hint {
+    display: block;
+    color: #666;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+/* Checkbox styles for terms acceptance */
+.checkbox-group {
+    margin: 1.5rem 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-top: 0.25rem;
+}
+
+.checkbox-group label {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.4;
+}
+
+.checkbox-group a {
+    color: #4a90e2;
+    text-decoration: none;
+}
+
+.checkbox-group a:hover {
+    text-decoration: underline;
+}
+
 .error-message {
     background-color: #ffebee;
     color: #c62828;
@@ -58,6 +94,11 @@
     justify-content: space-between;
     align-items: center;
     margin-top: 1.5rem;
+}
+
+/* Modified for registration page where we don't need space-between */
+.form-actions.center {
+    justify-content: center;
 }
 
 .btn {
@@ -102,4 +143,24 @@
 
 .auth-footer a:hover {
     text-decoration: underline;
+}
+
+/* Form validation styles */
+.form-group input:invalid {
+    border-color: #dc3545;
+}
+
+.form-group input:invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+}
+
+/* Only show validation styles after user interaction */
+.form-group input:not(:placeholder-shown):valid {
+    border-color: #28a745;
+}
+
+.form-group input:not(:placeholder-shown):valid:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.25);
 }
