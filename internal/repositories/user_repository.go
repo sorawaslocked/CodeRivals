@@ -2,6 +2,8 @@ package repositories
 
 import (
 	"database/sql"
+	"errors"
+	"github.com/lib/pq"
 	"github.com/sorawaslocked/CodeRivals/internal/entities"
 )
 
@@ -38,15 +40,27 @@ func (repo *PGUserRepository) Count() (uint64, error) {
 
 func (repo *PGUserRepository) Create(user *entities.User) error {
 	stmt := `INSERT INTO users (username, email, password, points, created_at, updated_at)
-	VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING id`
+	VALUES ($1, $2, $3, 0, NOW(), NOW()) RETURNING id`
 
 	err := repo.db.QueryRow(
 		stmt,
 		user.Username,
 		user.Email,
 		user.HashedPassword,
-		user.Points,
 	).Scan(&user.ID)
+
+	var pqErr *pq.Error
+	ok := errors.As(err, &pqErr)
+
+	// Check for duplicate username and email error
+	if ok && pqErr.Code == "23505" {
+		if pqErr.Constraint == "users_username_key" {
+			return ErrDuplicateUsername
+		}
+		if pqErr.Constraint == "users_email_key" {
+			return ErrDuplicateEmail
+		}
+	}
 
 	return err
 }

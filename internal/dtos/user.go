@@ -7,3 +7,11 @@ type UserLoginForm struct {
 	Password string
 	validator.Validator
 }
+
+type UserRegisterForm struct {
+	Username        string
+	Email           string
+	Password        string
+	ConfirmPassword string
+	validator.Validator
+}
