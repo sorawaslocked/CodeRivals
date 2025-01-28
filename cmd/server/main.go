@@ -7,6 +7,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/sorawaslocked/CodeRivals/internal/app"
 	"github.com/sorawaslocked/CodeRivals/internal/repositories"
+	"github.com/sorawaslocked/CodeRivals/internal/services"
 	"log"
 	"net/http"
 	"os"
@@ -27,12 +28,14 @@ func main() {
 	problemRepository := repositories.NewPGProblemRepository(db, topicRepository)
 	userRepository := repositories.NewPGUserRepository(db)
 
+	problemService := services.NewProblemService(problemRepository)
+	authService := services.NewAuthService(userRepository)
+
 	app := app.Application{
-		ErrorLog:          errorLog,
-		InfoLog:           infoLog,
-		TopicRepository:   topicRepository,
-		ProblemRepository: problemRepository,
-		UserRepository:    userRepository,
+		ErrorLog:       errorLog,
+		InfoLog:        infoLog,
+		ProblemService: problemService,
+		AuthService:    authService,
 	}
 
 	addr := flag.String("addr", ":8080", "Server port")

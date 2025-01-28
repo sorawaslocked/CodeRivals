@@ -1,14 +1,13 @@
 package app
 
 import (
-	"github.com/sorawaslocked/CodeRivals/internal/repositories"
+	"github.com/sorawaslocked/CodeRivals/internal/services"
 	"log"
 )
 
 type Application struct {
-	ErrorLog          *log.Logger
-	InfoLog           *log.Logger
-	TopicRepository   repositories.TopicRepository
-	ProblemRepository repositories.ProblemRepository
-	UserRepository    repositories.UserRepository
+	ErrorLog       *log.Logger
+	InfoLog        *log.Logger
+	ProblemService *services.ProblemService
+	AuthService    *services.AuthService
 }
