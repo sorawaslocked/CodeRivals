@@ -11,6 +11,8 @@ func (app *Application) Routes() http.Handler {
 
 	router.GET("/login", app.login)
 	router.POST("/login", app.loginPost)
+	router.GET("/register", app.register)
+	router.POST("/register", app.registerPost)
 
 	standard := alice.New(app.logRequest)
 
