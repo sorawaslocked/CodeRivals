@@ -1,0 +1,153 @@
+/* web/static/css/submissions.css */
+.submissions-container {
+    padding: 2rem 0;
+}
+
+.submissions-container h1 {
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+/* Filters */
+.filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.filter-group select,
+.filter-group input {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+/* Submissions table */
+.submissions-list table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.submissions-list th,
+.submissions-list td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.submissions-list th {
+    background: #f8f9fa;
+    font-weight: 500;
+    color: #555;
+}
+
+.submission-row:hover {
+    background: #f8f9fa;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-badge.accepted {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-badge.wrong_answer {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.status-badge.runtime_error {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.status-badge.time_limit {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+/* Problem link */
+.problem-link {
+    color: #1976d2;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.problem-link:hover {
+    text-decoration: underline;
+}
+
+/* Timestamp */
+.timestamp {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* No submissions message */
+.no-submissions {
+    text-align: center;
+    padding: 3rem !important;
+    color: #666;
+}
+
+.no-submissions a {
+    color: #1976d2;
+    text-decoration: none;
+}
+
+.no-submissions a:hover {
+    text-decoration: underline;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding: 1rem;
+}
+
+.page-link {
+    color: #1976d2;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+.page-link:hover {
+    background: #f0f7ff;
+}
+
+.page-info {
+    color: #666;
+    font-size: 0.9rem;
+}

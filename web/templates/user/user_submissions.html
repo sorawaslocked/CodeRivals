@@ -1,0 +1,94 @@
+<!-- web/templates/submissions/list.html -->
+{{define "title"}}My Submissions{{end}}
+
+{{define "styles"}}
+<link rel="stylesheet" href="../../static/css/submissions.css">'
+<link rel="stylesheet" href="../../static/css/main.css">
+{{end}}
+
+{{define "content"}}
+<div class="submissions-container">
+  <h1>My Submissions</h1>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label for="status">Status:</label>
+      <select id="status" name="status">
+        <option value="">All</option>
+        <option value="accepted">Accepted</option>
+        <option value="wrong_answer">Wrong Answer</option>
+        <option value="runtime_error">Runtime Error</option>
+        <option value="time_limit">Time Limit Exceeded</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="problem">Problem:</label>
+      <input type="text" id="problem" name="problem" placeholder="Search problems...">
+    </div>
+  </div>
+
+  <div class="submissions-list">
+    <table>
+      <thead>
+      <tr>
+        <th>Status</th>
+        <th>Problem</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Language</th>
+        <th>Submitted</th>
+      </tr>
+      </thead>
+      <tbody>
+      {{range .Submissions}}
+      <tr class="submission-row">
+        <td>
+                        <span class="status-badge {{.Status}}">
+                            {{.StatusText}}
+                        </span>
+        </td>
+        <td>
+          <a href="/problems/{{.ProblemID}}" class="problem-link">{{.ProblemTitle}}</a>
+        </td>
+        <td>{{.Runtime}} ms</td>
+        <td>{{.Memory}} KB</td>
+        <td>{{.Language}}</td>
+        <td>
+          <span class="timestamp" title="{{.SubmittedAt.Format "2006-01-02 15:04:05"}}">
+          {{.RelativeTime}}
+          </span>
+        </td>
+      </tr>
+      {{else}}
+      <tr>
+        <td colspan="6" class="no-submissions">
+          <p>No submissions yet. <a href="/problems">Try solving some problems!</a></p>
+        </td>
+      </tr>
+      {{end}}
+      </tbody>
+    </table>
+
+<!--    {{if .Pagination}}-->
+<!--    <div class="pagination">-->
+<!--      {{if .Pagination.HasPrev}}-->
+<!--      <a href="?page={{.Pagination.PrevPage}}" class="page-link">&laquo; Previous</a>-->
+<!--      {{end}}-->
+
+<!--      <span class="page-info">-->
+<!--                Page {{.Pagination.CurrentPage}} of {{.Pagination.TotalPages}}-->
+<!--            </span>-->
+
+<!--      {{if .Pagination.HasNext}}-->
+<!--      <a href="?page={{.Pagination.NextPage}}" class="page-link">Next &raquo;</a>-->
+<!--      {{end}}-->
+<!--    </div>-->
+    {{end}}
+  </div>
+</div>
+{{end}}
+
+<!--{{define "scripts"}}-->
+<!--<script src="/static/js/submissions.js"></script>-->
+<!--{{end}}-->
