@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"flag"
+	"github.com/alexedwards/scs/v2"
 	_ "github.com/lib/pq"
 	"github.com/sorawaslocked/CodeRivals/internal/app"
 	"github.com/sorawaslocked/CodeRivals/internal/repositories"
@@ -11,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 func main() {
@@ -30,6 +32,9 @@ func main() {
 
 	problemService := services.NewProblemService(problemRepository)
 	authService := services.NewAuthService(userRepository)
+
+	session := scs.New()
+	session.Lifetime = 24 * time.Hour
 
 	app := app.Application{
 		ErrorLog:       errorLog,

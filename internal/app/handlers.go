@@ -7,20 +7,20 @@ import (
 	"net/http"
 )
 
-func (app *Application) login(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (app *Application) login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.Write([]byte("Login page"))
 }
 
-func (app *Application) loginPost(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
-	err := req.ParseForm()
+func (app *Application) loginPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	err := r.ParseForm()
 
 	if err != nil {
 		app.ErrorLog.Print(err)
 	}
 
 	loginForm := &dtos.UserLoginForm{
-		Username: req.PostForm.Get("username"),
-		Password: req.PostForm.Get("password"),
+		Username: r.PostForm.Get("username"),
+		Password: r.PostForm.Get("password"),
 	}
 
 	var userId uint64
@@ -29,6 +29,8 @@ func (app *Application) loginPost(w http.ResponseWriter, req *http.Request, _ ht
 	if err != nil {
 		app.ErrorLog.Print(err)
 	}
+
+	app.Session.Put(r.Context(), "user_id", userId)
 
 	w.Write([]byte(fmt.Sprintf("Logged in userId %d", userId)))
 }
