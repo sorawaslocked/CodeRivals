@@ -21,6 +21,8 @@ func main() {
 
 	db, err := openDB("user=postgres password=1234 dbname=coderivals sslmode=disable host=localhost")
 
+	addr := flag.String("addr", ":8080", "HTTP address")
+
 	if err != nil {
 		errorLog.Print("Failed to connect to database")
 		errorLog.Fatal(err)
