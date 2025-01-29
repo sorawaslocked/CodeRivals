@@ -43,7 +43,11 @@ func main() {
 		AuthService:    authService,
 	}
 
-	addr := flag.String("addr", ":8080", "Server port")
+	// Initialize templates
+	err = app.InitTemplates()
+	if err != nil {
+		errorLog.Fatal(err)
+	}
 
 	flag.Parse()
 

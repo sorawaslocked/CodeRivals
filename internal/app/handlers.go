@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/sorawaslocked/CodeRivals/internal/dtos"
+	"github.com/sorawaslocked/CodeRivals/internal/validator"
 	"net/http"
 )
 
@@ -32,11 +33,14 @@ func (app *Application) loginPost(w http.ResponseWriter, r *http.Request, _ http
 		data := &templateData{
 			Form: form,
 		}
+		app.ErrorLog.Println(err)
 		app.render(w, r, "auth/login.html", data)
 		return
 	}
 
-	app.Session.Put(r.Context(), "user_id", userId)
+	app.InfoLog.Println(userId)
+
+	//app.Session.Put(r.Context(), "user_id", userId)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
@@ -56,12 +60,21 @@ func (app *Application) registerPost(w http.ResponseWriter, r *http.Request, _ h
 		return
 	}
 
-	form := &dtos.UserRegisterForm{
-		Username:        r.PostForm.Get("username"),
-		Email:           r.PostForm.Get("email"),
-		Password:        r.PostForm.Get("password"),
-		ConfirmPassword: r.PostForm.Get("confirmPassword"),
-	}
+	username := r.PostForm.Get("username")
+	email := r.PostForm.Get("email")
+	password := r.PostForm.Get("password")
+	ConfimPassword := r.PostForm.Get("confirmPassword")
+
+	app.InfoLog.Println(username, email, password, ConfimPassword)
+
+	//form := &dtos.UserRegisterForm{
+	//	Username:        r.PostForm.Get("username"),
+	//	Email:           r.PostForm.Get("email"),
+	//	Password:        r.PostForm.Get("password"),
+	//	ConfirmPassword: r.PostForm.Get("confirmPassword"),
+	//}
+
+	form := &dtos.UserRegisterForm{username, email, password, ConfimPassword, validator.Validator{}}
 
 	err = app.AuthService.Register(form)
 	if err != nil || !form.Valid() {
@@ -69,14 +82,9 @@ func (app *Application) registerPost(w http.ResponseWriter, r *http.Request, _ h
 			Form: form,
 		}
 		app.render(w, r, "auth/register.html", data)
+		app.ErrorLog.Print(err)
 		return
 	}
 
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
-}
-
-func (app *Application) render(w http.ResponseWriter, r *http.Request, name string, data *templateData) {
-	// Placeholder for template rendering
-	// A simple response for now
-	w.Write([]byte("Template: " + name))
 }
