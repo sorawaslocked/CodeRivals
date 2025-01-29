@@ -39,7 +39,7 @@ func (repo *PGUserRepository) Count() (uint64, error) {
 }
 
 func (repo *PGUserRepository) Create(user *entities.User) error {
-	stmt := `INSERT INTO users (username, email, password, points, created_at, updated_at)
+	stmt := `INSERT INTO users (username, email, hashed_password, points, created_at, updated_at)
 	VALUES ($1, $2, $3, 0, NOW(), NOW()) RETURNING id`
 
 	err := repo.db.QueryRow(
@@ -67,7 +67,7 @@ func (repo *PGUserRepository) Create(user *entities.User) error {
 
 func (repo *PGUserRepository) Get(id uint64) (*entities.User, error) {
 	user := &entities.User{}
-	stmt := `SELECT id, username, email, password, points, created_at, updated_at
+	stmt := `SELECT id, username, email, hashed_password, points, created_at, updated_at
 	FROM users WHERE id = $1`
 
 	err := repo.db.QueryRow(stmt, id).Scan(
@@ -89,7 +89,7 @@ func (repo *PGUserRepository) Get(id uint64) (*entities.User, error) {
 
 func (repo *PGUserRepository) GetByEmail(email string) (*entities.User, error) {
 	user := &entities.User{}
-	stmt := `SELECT id, username, email, password, points, created_at, updated_at
+	stmt := `SELECT id, username, email, hashed_password, points, created_at, updated_at
 	FROM users WHERE email = $1`
 
 	err := repo.db.QueryRow(stmt, email).Scan(
@@ -111,7 +111,7 @@ func (repo *PGUserRepository) GetByEmail(email string) (*entities.User, error) {
 
 func (repo *PGUserRepository) GetByUsername(username string) (*entities.User, error) {
 	user := &entities.User{}
-	stmt := `SELECT id, username, email, password, points, created_at, updated_at
+	stmt := `SELECT id, username, email, hashed_password, points, created_at, updated_at
 	FROM users WHERE username = $1`
 
 	err := repo.db.QueryRow(stmt, username).Scan(
@@ -132,7 +132,7 @@ func (repo *PGUserRepository) GetByUsername(username string) (*entities.User, er
 }
 
 func (repo *PGUserRepository) GetAll() ([]*entities.User, error) {
-	stmt := `SELECT id, username, email, password, points, created_at, updated_at
+	stmt := `SELECT id, username, email, hashed_password, points, created_at, updated_at
 	FROM users`
 
 	rows, err := repo.db.Query(stmt)
@@ -167,7 +167,7 @@ func (repo *PGUserRepository) GetAll() ([]*entities.User, error) {
 
 func (repo *PGUserRepository) Update(user *entities.User) error {
 	stmt := `UPDATE users
-	SET username = $1, email = $2, password = $3, points = $4, updated_at = NOW()
+	SET username = $1, email = $2, hashed_password = $3, points = $4, updated_at = NOW()
 	WHERE id = $5`
 
 	_, err := repo.db.Exec(

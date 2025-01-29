@@ -46,11 +46,11 @@ func (repo *PGProblemRepository) Create(problem *entities.Problem) error {
 
 	defer tx.Rollback()
 
-	problemStmt := `INSERT INTO problems (title, description, difficulty, created_at, updated_at)
-	VALUES ($1, $2, $3, NOW(), NOW()) RETURNING id`
+	problemStmt := `INSERT INTO problems (title, description, difficulty, url, created_at, updated_at)
+	VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING id`
 	var problemId uint64
 
-	err = tx.QueryRow(problemStmt, problem.Title, problem.Description, problem.Difficulty).Scan(&problemId)
+	err = tx.QueryRow(problemStmt, problem.Title, problem.Description, problem.Difficulty, problem.Url).Scan(&problemId)
 	if err != nil {
 		return err
 	}
@@ -74,13 +74,14 @@ func (repo *PGProblemRepository) Create(problem *entities.Problem) error {
 func (repo *PGProblemRepository) Get(id uint64) (*entities.Problem, error) {
 	prob := &entities.Problem{}
 
-	probStmt := `SELECT title, description, difficulty, created_at, updated_at
+	probStmt := `SELECT title, description, difficulty, url, created_at, updated_at
 	FROM problems WHERE id = $1`
 
 	err := repo.db.QueryRow(probStmt, id).Scan(
 		&prob.Title,
 		&prob.Description,
 		&prob.Difficulty,
+		&prob.Url,
 		&prob.CreatedAt,
 		&prob.UpdatedAt)
 
@@ -101,7 +102,7 @@ func (repo *PGProblemRepository) Get(id uint64) (*entities.Problem, error) {
 }
 
 func (repo *PGProblemRepository) GetAll() ([]*entities.Problem, error) {
-	probStmt := `SELECT id, title, description, difficulty, created_at, updated_at
+	probStmt := `SELECT id, title, description, difficulty, url, created_at, updated_at
 	FROM problems`
 
 	rows, err := repo.db.Query(probStmt)
@@ -122,6 +123,7 @@ func (repo *PGProblemRepository) GetAll() ([]*entities.Problem, error) {
 			&prob.Title,
 			&prob.Description,
 			&prob.Difficulty,
+			&prob.Url,
 			&prob.CreatedAt,
 			&prob.UpdatedAt)
 
@@ -153,10 +155,10 @@ func (repo *PGProblemRepository) Update(prob *entities.Problem) error {
 	defer tx.Rollback()
 
 	stmt := `UPDATE problems
-	SET title = $1, description = $2, difficulty = $3, updated_at = NOW()
-	WHERE id = $4`
+	SET title = $1, description = $2, difficulty = $3, url = $4, updated_at = NOW()
+	WHERE id = $5`
 
-	_, err = tx.Exec(stmt, prob.Title, prob.Description, prob.Difficulty, prob.ID)
+	_, err = tx.Exec(stmt, prob.Title, prob.Description, prob.Difficulty, prob.Url, prob.ID)
 
 	if err != nil {
 		return err
