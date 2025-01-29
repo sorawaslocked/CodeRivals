@@ -1,15 +1,16 @@
+{{define "base"}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!--    <title>{{template "title" .}} - CodeRivals</title>-->
+    <title>{{template "title" .}} - CodeRivals</title>
 
     <!-- Common CSS -->
-    <link rel="stylesheet" href="../../static/css/main.css">
+    <link rel="stylesheet" href="/static/css/main.css">
 
     <!-- Page specific CSS -->
-<!--    {{block "styles" .}}{{end}}-->
+    {{block "styles" .}}{{end}}
 </head>
 <body>
 <header class="navbar">
@@ -17,16 +18,16 @@
         <div class="nav-brand">
             <a href="/">CodeRivals</a>
         </div>
-<!--        {{if .User}}-->
+        {{if .User}}
         <div class="nav-menu">
             <a href="/problems">Problems</a>
             <a href="/contests">Contests</a>
             <a href="/leaderboard">Leaderboard</a>
         </div>
         <div class="nav-user">
-<!--            <span class="points">{{.User.Points}} points</span>-->
+            <span class="points">{{.User.Points}} points</span>
             <div class="dropdown">
-<!--                <button class="dropdown-toggle">{{.User.Username}}</button>-->
+                <button class="dropdown-toggle">{{.User.Username}}</button>
                 <div class="dropdown-menu">
                     <a href="/profile">Profile</a>
                     <a href="/submissions">My Submissions</a>
@@ -35,17 +36,17 @@
                 </div>
             </div>
         </div>
-<!--        {{else}}-->
+        {{else}}
         <div class="nav-auth">
             <a href="/login" class="btn btn-link">Login</a>
             <a href="/register" class="btn btn-primary">Sign Up</a>
         </div>
-<!--        {{end}}-->
+        {{end}}
     </nav>
 </header>
 
 <main class="container">
-<!--    {{template "content" .}}-->
+    {{template "content" .}}
 </main>
 
 <footer class="footer">
@@ -69,7 +70,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-<!--            <p>&copy; {{.CurrentYear}} CodeRivals. All rights reserved.</p>-->
+            <p>&copy; {{.CurrentYear}} CodeRivals. All rights reserved.</p>
         </div>
     </div>
 </footer>
@@ -78,6 +79,7 @@
 <script src="/static/js/main.js"></script>
 
 <!-- Page specific JavaScript -->
-<!--{{block "scripts" .}}{{end}}-->
+{{block "scripts" .}}{{end}}
 </body>
 </html>
+{{end}}

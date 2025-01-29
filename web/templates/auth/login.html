@@ -1,20 +1,22 @@
-<!--{{define "title"}}Login{{end}}-->
+{{define "title"}}Login{{end}}
 
-<!--{{define "styles"}}-->
-<link rel="stylesheet" href="../../static/css/main.css">
-<link rel="stylesheet" href="../../static/css/auth.css">
-<!--{{end}}-->
+{{define "styles"}}
+<link rel="stylesheet" href="/static/css/main.css">
+<link rel="stylesheet" href="/static/css/auth.css">
+{{end}}
 
-<!--{{define "content"}}-->
+{{define "content"}}
 <div class="auth-container">
     <div class="auth-box">
         <h1>Welcome Back</h1>
         <form id="loginForm" action="/login" method="POST">
-<!--            {{if .Error}}-->
-<!--            <div class="error-message">-->
-<!--                {{.Error}}-->
-<!--            </div>-->
-<!--            {{end}}-->
+            {{with .Form}}
+            {{range $key, $value := .FieldErrors}}
+            <div class="error-message">
+                {{$value}}
+            </div>
+            {{end}}
+            {{end}}
             <div class="form-group">
                 <label for="username">Username or Email</label>
                 <input type="text" id="username" name="username" required>
@@ -28,13 +30,13 @@
                 <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
             </div>
             <div class="auth-footer">
-                <p>Don't have an account? <a href="register.html">Sign up</a></p>
+                <p>Don't have an account? <a href="/register">Sign up</a></p>
             </div>
         </form>
     </div>
 </div>
-<!--{{end}}-->
+{{end}}
 
-<!--{{define "scripts"}}-->
-<!--<script src="../../static/js/auth.js"></script>-->
-<!--{{end}}-->
+{{define "scripts"}}
+<script src="/static/js/auth.js"></script>
+{{end}}
