@@ -7,7 +7,8 @@ type Problem struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Difficulty  string    `json:"difficulty"`
+	Url         string    `json:"url"`
+	Topics      []*Topic  `json:"topics"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
-	Topics      []*Topic  `json:"topics"`
 }
