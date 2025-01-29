@@ -3,8 +3,8 @@ package entities
 import "time"
 
 type ProblemSubmission struct {
-	UserID      uint      `json:"user_id"`
-	ProblemID   uint      `json:"problem_id"`
+	UserID      uint64    `json:"user_id"`
+	ProblemID   uint64    `json:"problem_id"`
 	Code        string    `json:"code"`
 	Status      string    `json:"status"`
 	Runtime     uint32    `json:"runtime_ms"`
