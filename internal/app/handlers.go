@@ -1,13 +1,12 @@
 package app
 
 import (
-	"github.com/julienschmidt/httprouter"
 	"github.com/sorawaslocked/CodeRivals/internal/dtos"
 	"github.com/sorawaslocked/CodeRivals/internal/validator"
 	"net/http"
 )
 
-func (app *Application) login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (app *Application) login(w http.ResponseWriter, r *http.Request) {
 	data := &templateData{
 		Form: &dtos.UserLoginForm{},
 	}
@@ -15,7 +14,7 @@ func (app *Application) login(w http.ResponseWriter, r *http.Request, _ httprout
 	app.render(w, r, "auth/login.html", data)
 }
 
-func (app *Application) loginPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (app *Application) loginPost(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		app.ErrorLog.Print(err)
@@ -24,8 +23,8 @@ func (app *Application) loginPost(w http.ResponseWriter, r *http.Request, _ http
 	}
 
 	form := &dtos.UserLoginForm{
-		Username: r.PostForm.Get("username"),
-		Password: r.PostForm.Get("password"),
+		Username: r.FormValue("username"),
+		Password: r.FormValue("password"),
 	}
 
 	userId, err := app.AuthService.Login(form)
@@ -40,11 +39,13 @@ func (app *Application) loginPost(w http.ResponseWriter, r *http.Request, _ http
 
 	app.InfoLog.Println(userId)
 
-	//app.Session.Put(r.Context(), "user_id", userId)
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	err = app.Session.RenewToken(r.Context())
+
+	app.Session.Put(r.Context(), "user_id", userId)
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
-func (app *Application) register(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (app *Application) register(w http.ResponseWriter, r *http.Request) {
 	data := &templateData{
 		Form: &dtos.UserRegisterForm{},
 	}
@@ -52,7 +53,7 @@ func (app *Application) register(w http.ResponseWriter, r *http.Request, _ httpr
 	app.render(w, r, "auth/register.html", data)
 }
 
-func (app *Application) registerPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (app *Application) registerPost(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		app.ErrorLog.Print(err)
@@ -64,8 +65,6 @@ func (app *Application) registerPost(w http.ResponseWriter, r *http.Request, _ h
 	email := r.PostForm.Get("email")
 	password := r.PostForm.Get("password")
 	ConfimPassword := r.PostForm.Get("confirmPassword")
-
-	app.InfoLog.Println(username, email, password, ConfimPassword)
 
 	//form := &dtos.UserRegisterForm{
 	//	Username:        r.PostForm.Get("username"),

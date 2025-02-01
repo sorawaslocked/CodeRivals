@@ -13,10 +13,12 @@ func (app *Application) Routes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./web/static"))
 	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
-	router.GET("/login", app.login)
-	router.POST("/login", app.loginPost)
-	router.GET("/register", app.register)
-	router.POST("/register", app.registerPost)
+	dynamic := alice.New(app.Session.LoadAndSave)
+
+	router.Handler("GET", "/login", dynamic.ThenFunc(app.login))
+	router.Handler("POST", "/login", dynamic.ThenFunc(app.loginPost))
+	router.Handler("GET", "/register", dynamic.ThenFunc(app.register))
+	router.Handler("POST", "/register", dynamic.ThenFunc(app.registerPost))
 
 	standard := alice.New(app.logRequest)
 

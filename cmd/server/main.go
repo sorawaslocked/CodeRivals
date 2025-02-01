@@ -43,6 +43,7 @@ func main() {
 		InfoLog:        infoLog,
 		ProblemService: problemService,
 		AuthService:    authService,
+		Session:        session,
 	}
 
 	// Initialize templates
