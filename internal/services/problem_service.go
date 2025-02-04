@@ -21,6 +21,10 @@ func (s *ProblemService) GetProblem(id uint64) (*entities.Problem, error) {
 	return s.problemRepo.Get(id)
 }
 
+func (s *ProblemService) GetAllProblems() ([]*entities.Problem, error) {
+	return s.problemRepo.GetAll()
+}
+
 func (s *ProblemService) ListProblems() ([]*entities.Problem, error) {
 	return s.problemRepo.GetAll()
 }

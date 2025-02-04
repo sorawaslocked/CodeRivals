@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/sorawaslocked/CodeRivals/internal/entities"
 	"html/template"
 	"net/http"
 	"path/filepath"
@@ -11,6 +12,7 @@ type templateData struct {
 	CurrentYear         int
 	Form                any
 	AuthenticatedUserId uint64
+	Problems            []*entities.Problem
 }
 
 func (app *Application) newTemplateData(r *http.Request) *templateData {

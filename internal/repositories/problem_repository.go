@@ -103,7 +103,7 @@ func (repo *PGProblemRepository) Get(id uint64) (*entities.Problem, error) {
 
 func (repo *PGProblemRepository) GetAll() ([]*entities.Problem, error) {
 	probStmt := `SELECT id, title, description, difficulty, url, created_at, updated_at
-	FROM problems`
+	FROM problems ORDER BY id`
 
 	rows, err := repo.db.Query(probStmt)
 

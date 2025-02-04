@@ -7,11 +7,10 @@ import (
 )
 
 func (app *Application) login(w http.ResponseWriter, r *http.Request) {
-	data := &templateData{
-		Form: &dtos.UserLoginForm{},
-	}
+	data := app.newTemplateData(r)
+	data.Form = dtos.UserLoginForm{}
 
-	app.render(w, r, "auth/login.html", data)
+	app.render(w, r, "auth/login.gohtml", data)
 }
 
 func (app *Application) loginPost(w http.ResponseWriter, r *http.Request) {
@@ -33,11 +32,10 @@ func (app *Application) loginPost(w http.ResponseWriter, r *http.Request) {
 	userId, err := app.AuthService.Login(form)
 
 	if err != nil || !form.Valid() {
-		data := &templateData{
-			Form: form,
-		}
+		data := app.newTemplateData(r)
+
 		app.ErrorLog.Println(err)
-		app.render(w, r, "auth/login.html", data)
+		app.render(w, r, "auth/login.gohtml", data)
 		return
 	}
 
@@ -48,11 +46,10 @@ func (app *Application) loginPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) register(w http.ResponseWriter, r *http.Request) {
-	data := &templateData{
-		Form: &dtos.UserRegisterForm{},
-	}
+	data := app.newTemplateData(r)
+	data.Form = dtos.UserRegisterForm{}
 
-	app.render(w, r, "auth/register.html", data)
+	app.render(w, r, "auth/register.gohtml", data)
 }
 
 func (app *Application) registerPost(w http.ResponseWriter, r *http.Request) {
@@ -79,13 +76,25 @@ func (app *Application) registerPost(w http.ResponseWriter, r *http.Request) {
 	err = app.AuthService.Register(form)
 
 	if err != nil || !form.Valid() {
-		data := &templateData{
-			Form: form,
-		}
-		app.render(w, r, "auth/register.html", data)
+		data := app.newTemplateData(r)
+
+		app.render(w, r, "auth/register.gohtml", data)
 		app.ErrorLog.Print(err)
 		return
 	}
 
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
+
+func (app *Application) problems(w http.ResponseWriter, r *http.Request) {
+	problems, err := app.ProblemService.GetAllProblems()
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+	}
+
+	data := app.newTemplateData(r)
+	data.Problems = problems
+
+	app.render(w, r, "problems.gohtml", data)
 }
