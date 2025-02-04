@@ -9,15 +9,15 @@ import (
 
 type UserRepository interface {
 	// Basic CRUD
-	Count() (uint64, error)
+	Count() (int, error)
 	Create(user *entities.User) error
-	Get(id uint64) (*entities.User, error)
+	Get(id int) (*entities.User, error)
 	GetByEmail(email string) (*entities.User, error)
 	GetByUsername(username string) (*entities.User, error)
 	GetAll() ([]*entities.User, error)
 	Update(user *entities.User) error
-	UpdatePoints(id uint64, points int) error
-	Delete(id uint64) error
+	UpdatePoints(id int, points int) error
+	Delete(id int) error
 
 	// User engagement
 	//GetComments(userID uint64) ([]*entities.Comment, error)
@@ -29,8 +29,8 @@ type PGUserRepository struct {
 
 func NewPGUserRepository(db *sql.DB) *PGUserRepository { return &PGUserRepository{db: db} }
 
-func (repo *PGUserRepository) Count() (uint64, error) {
-	var count uint64
+func (repo *PGUserRepository) Count() (int, error) {
+	var count int
 	err := repo.db.QueryRow("SELECT COUNT(*) FROM users").Scan(&count)
 	if err != nil {
 		return 0, err
@@ -65,7 +65,7 @@ func (repo *PGUserRepository) Create(user *entities.User) error {
 	return err
 }
 
-func (repo *PGUserRepository) Get(id uint64) (*entities.User, error) {
+func (repo *PGUserRepository) Get(id int) (*entities.User, error) {
 	user := &entities.User{}
 	stmt := `SELECT id, username, email, hashed_password, points, created_at, updated_at
 	FROM users WHERE id = $1`
@@ -182,13 +182,13 @@ func (repo *PGUserRepository) Update(user *entities.User) error {
 	return err
 }
 
-func (repo *PGUserRepository) UpdatePoints(id uint64, points int) error {
+func (repo *PGUserRepository) UpdatePoints(id int, points int) error {
 	stmt := `UPDATE users SET points = points + $1, updated_at = NOW() WHERE id = $2`
 	_, err := repo.db.Exec(stmt, points, id)
 	return err
 }
 
-func (repo *PGUserRepository) Delete(id uint64) error {
+func (repo *PGUserRepository) Delete(id int) error {
 	tx, err := repo.db.Begin()
 	if err != nil {
 		return err

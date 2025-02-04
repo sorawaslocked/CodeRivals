@@ -3,7 +3,7 @@ package entities
 import "time"
 
 type Problem struct {
-	ID          uint64    `json:"id"`
+	ID          int       `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Difficulty  string    `json:"difficulty"`

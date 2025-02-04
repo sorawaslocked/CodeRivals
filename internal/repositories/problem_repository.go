@@ -6,12 +6,12 @@ import (
 )
 
 type ProblemRepository interface {
-	Count() (uint64, error)
+	Count() (int, error)
 	Create(request *entities.Problem) error
-	Get(id uint64) (*entities.Problem, error)
+	Get(id int) (*entities.Problem, error)
 	GetAll() ([]*entities.Problem, error)
 	Update(problem *entities.Problem) error
-	Delete(id uint64) error
+	Delete(id int) error
 }
 
 type PGProblemRepository struct {
@@ -26,8 +26,8 @@ func NewPGProblemRepository(db *sql.DB, topicRepo TopicRepository) ProblemReposi
 	}
 }
 
-func (repo *PGProblemRepository) Count() (uint64, error) {
-	var count uint64
+func (repo *PGProblemRepository) Count() (int, error) {
+	var count int
 
 	err := repo.db.QueryRow("SELECT COUNT(*) FROM problems").Scan(&count)
 
@@ -48,7 +48,7 @@ func (repo *PGProblemRepository) Create(problem *entities.Problem) error {
 
 	problemStmt := `INSERT INTO problems (title, description, difficulty, url, created_at, updated_at)
 	VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING id`
-	var problemId uint64
+	var problemId int
 
 	err = tx.QueryRow(problemStmt, problem.Title, problem.Description, problem.Difficulty, problem.Url).Scan(&problemId)
 	if err != nil {
@@ -71,7 +71,7 @@ func (repo *PGProblemRepository) Create(problem *entities.Problem) error {
 	return err
 }
 
-func (repo *PGProblemRepository) Get(id uint64) (*entities.Problem, error) {
+func (repo *PGProblemRepository) Get(id int) (*entities.Problem, error) {
 	prob := &entities.Problem{}
 
 	probStmt := `SELECT title, description, difficulty, url, created_at, updated_at
@@ -192,7 +192,7 @@ func (repo *PGProblemRepository) Update(prob *entities.Problem) error {
 	return nil
 }
 
-func (repo *PGProblemRepository) Delete(id uint64) error {
+func (repo *PGProblemRepository) Delete(id int) error {
 	tx, err := repo.db.Begin()
 
 	if err != nil {

@@ -6,13 +6,13 @@ import (
 )
 
 type TopicRepository interface {
-	Count() (uint64, error)
-	Get(id uint64) (*entities.Topic, error)
+	Count() (int, error)
+	Get(id int) (*entities.Topic, error)
 	GetAll() ([]*entities.Topic, error)
-	GetAllForProblem(problemId uint64) ([]*entities.Topic, error)
+	GetAllForProblem(problemId int) ([]*entities.Topic, error)
 	Create(name string) error
 	Update(newName string) error
-	Delete(id uint64) error
+	Delete(id int) error
 }
 
 type PGTopicRepository struct {
@@ -23,8 +23,8 @@ func NewPGTopicRepository(db *sql.DB) *PGTopicRepository {
 	return &PGTopicRepository{db: db}
 }
 
-func (repo *PGTopicRepository) Count() (uint64, error) {
-	var count uint64
+func (repo *PGTopicRepository) Count() (int, error) {
+	var count int
 
 	stmt := "SELECT COUNT(*) FROM topics"
 
@@ -37,7 +37,7 @@ func (repo *PGTopicRepository) Count() (uint64, error) {
 	return count, nil
 }
 
-func (repo *PGTopicRepository) Get(id uint64) (*entities.Topic, error) {
+func (repo *PGTopicRepository) Get(id int) (*entities.Topic, error) {
 	topic := &entities.Topic{
 		ID: id,
 	}
@@ -93,7 +93,7 @@ func (repo *PGTopicRepository) GetAll() ([]*entities.Topic, error) {
 	return topics, nil
 }
 
-func (repo *PGTopicRepository) GetAllForProblem(problemId uint64) ([]*entities.Topic, error) {
+func (repo *PGTopicRepository) GetAllForProblem(problemId int) ([]*entities.Topic, error) {
 	stmt := `SELECT t.name, t.id
 	FROM problem_topics pt
 	JOIN topics t ON pt.topic_id = t.id
@@ -136,7 +136,7 @@ func (repo *PGTopicRepository) Update(newName string) error {
 	return nil
 }
 
-func (repo *PGTopicRepository) Delete(id uint64) error {
+func (repo *PGTopicRepository) Delete(id int) error {
 	stmt := "DELETE FROM topics WHERE id = $1"
 
 	_, err := repo.db.Exec(stmt, id)

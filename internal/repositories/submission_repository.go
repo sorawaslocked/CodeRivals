@@ -18,7 +18,7 @@ func (r *ProblemSubmissionRepository) Create(submission *entities.ProblemSubmiss
 	query := `
 		INSERT INTO problem_submissions (
 			user_id, problem_id, code, status, runtime_ms, error
-		) VALUES ($1, $2, $3, $4, $5, $6)`
+		) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
 
 	_, err := r.db.Exec(query,
 		submission.UserID,
@@ -28,10 +28,11 @@ func (r *ProblemSubmissionRepository) Create(submission *entities.ProblemSubmiss
 		submission.Runtime,
 		submission.Error,
 	)
+
 	return err
 }
 
-func (r *ProblemSubmissionRepository) GetByUserAndProblem(userID, problemID uint64) (*entities.ProblemSubmission, error) {
+func (r *ProblemSubmissionRepository) GetByUserAndProblem(userID, problemID int) (*entities.ProblemSubmission, error) {
 	submission := &entities.ProblemSubmission{}
 	query := `
 		SELECT user_id, problem_id, code, status, runtime_ms, error
@@ -56,7 +57,7 @@ func (r *ProblemSubmissionRepository) GetByUserAndProblem(userID, problemID uint
 	return submission, nil
 }
 
-func (r *ProblemSubmissionRepository) GettAllByUser(userID uint64) ([]*entities.ProblemSubmission, error) {
+func (r *ProblemSubmissionRepository) GettAllByUser(userID int) ([]*entities.ProblemSubmission, error) {
 	query := `
 		SELECT user_id, problem_id, code, status, runtime_ms, error
 		FROM problem_submissions 
