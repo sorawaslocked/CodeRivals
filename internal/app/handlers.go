@@ -96,5 +96,5 @@ func (app *Application) problems(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	data.Problems = problems
 
-	app.render(w, r, "problems.gohtml", data)
+	app.render(w, r, "problem/problems.gohtml", data)
 }

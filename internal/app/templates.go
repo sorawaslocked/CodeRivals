@@ -5,20 +5,29 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
 type templateData struct {
 	CurrentYear         int
 	Form                any
+	User                any
 	AuthenticatedUserId uint64
 	Problems            []*entities.Problem
 }
 
 func (app *Application) newTemplateData(r *http.Request) *templateData {
+	userIdFromSession := app.Session.Get(r.Context(), "authenticatedUserId")
+
+	authenticatedUserId, ok := userIdFromSession.(uint64)
+	if !ok {
+		authenticatedUserId = 0
+	}
+
 	return &templateData{
 		CurrentYear:         time.Now().Year(),
-		AuthenticatedUserId: app.Session.Get(r.Context(), "authenticatedUserId").(uint64),
+		AuthenticatedUserId: authenticatedUserId,
 	}
 }
 
@@ -26,10 +35,14 @@ func (app *Application) InitTemplates() error {
 	cache := map[string]*template.Template{}
 
 	// Get the base layout template
-	baseTemplate := "./web/templates/layout/base.html"
+	baseTemplate := "./web/templates/layout/base.gohtml"
+
+	funcMap := template.FuncMap{
+		"toLowerCase": strings.ToLower,
+	}
 
 	// Get all page templates
-	pages, err := filepath.Glob("./web/templates/*/*.html")
+	pages, err := filepath.Glob("./web/templates/*/*.gohtml")
 	if err != nil {
 		return err
 	}
@@ -39,12 +52,12 @@ func (app *Application) InitTemplates() error {
 		name := filepath.Base(page)
 
 		// Skip base.html as it's our layout template
-		if name == "base.html" {
+		if name == "base.gohtml" {
 			continue
 		}
 
 		// Create template set with base template
-		ts, err := template.ParseFiles(baseTemplate)
+		ts, err := template.New("").Funcs(funcMap).ParseFiles(baseTemplate)
 		if err != nil {
 			return err
 		}

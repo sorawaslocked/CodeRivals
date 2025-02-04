@@ -1,0 +1,17 @@
+{{define "title"}}Problems{{end}}
+
+{{define "styles"}}
+<link rel="stylesheet" href="/static/css/problem.css">
+{{end}}
+
+{{define "content"}}
+<div class="problems-list">
+    {{range .Problems}}
+        <div class="problem-item">
+            <div class="problem-id">#{{.ID}}</div>
+            <a href="/problems/{{.Url}}" class="problem-title">{{.Title}}</a>
+            <div class="problem-difficulty {{toLowerCase .Difficulty}}">{{.Difficulty}}</div>
+        </div>
+    {{end}}
+</div>
+{{end}}
