@@ -25,6 +25,26 @@ func (s *ProblemService) GetAllProblems() ([]*entities.Problem, error) {
 	return s.problemRepo.GetAll()
 }
 
+func (s *ProblemService) GetPaginatedProblems(offset, itemsPerPage int) ([]*entities.Problem, int, error) {
+	problems, err := s.GetAllProblems()
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	totalProblems := len(problems)
+
+	if totalProblems < offset {
+		return nil, totalProblems, nil
+	}
+
+	if totalProblems-itemsPerPage < offset {
+		return problems[offset:], totalProblems, nil
+	}
+
+	return problems[offset : offset+itemsPerPage], totalProblems, nil
+}
+
 func (s *ProblemService) ListProblems() ([]*entities.Problem, error) {
 	return s.problemRepo.GetAll()
 }

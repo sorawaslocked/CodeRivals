@@ -15,6 +15,7 @@ type templateData struct {
 	User                any
 	AuthenticatedUserId uint64
 	Problems            []*entities.Problem
+	Pagination          Pagination
 }
 
 func (app *Application) newTemplateData(r *http.Request) *templateData {
@@ -37,8 +38,15 @@ func (app *Application) InitTemplates() error {
 	// Get the base layout template
 	baseTemplate := "./web/templates/layout/base.gohtml"
 
+	partials, err := filepath.Glob("./web/templates/partials/*.gohtml")
+	if err != nil {
+		return err
+	}
+
 	funcMap := template.FuncMap{
 		"toLowerCase": strings.ToLower,
+		"add":         func(a, b int) int { return a + b },
+		"subtract":    func(a, b int) int { return a - b },
 	}
 
 	// Get all page templates
@@ -58,6 +66,12 @@ func (app *Application) InitTemplates() error {
 
 		// Create template set with base template
 		ts, err := template.New("").Funcs(funcMap).ParseFiles(baseTemplate)
+		if err != nil {
+			return err
+		}
+
+		// Parse all partials
+		ts, err = ts.ParseFiles(partials...)
 		if err != nil {
 			return err
 		}

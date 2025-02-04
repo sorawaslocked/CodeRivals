@@ -13,5 +13,6 @@
             <div class="problem-difficulty {{toLowerCase .Difficulty}}">{{.Difficulty}}</div>
         </div>
     {{end}}
+    {{template "pagination" .Pagination}}
 </div>
 {{end}}

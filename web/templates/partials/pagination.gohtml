@@ -1,0 +1,21 @@
+{{define "pagination"}}
+    {{if gt .TotalPages 1}}
+        <div class="pagination">
+            {{if gt .CurrentPage 1}}
+                <a href="?page={{subtract .CurrentPage 1}}" class="pagination-item">&laquo; Previous</a>
+            {{end}}
+
+            {{range .Pages}}
+                {{if eq . $.CurrentPage}}
+                    <span class="pagination-item active">{{.}}</span>
+                {{else}}
+                    <a href="?page={{.}}" class="pagination-item">{{.}}</a>
+                {{end}}
+            {{end}}
+
+            {{if lt .CurrentPage .TotalPages}}
+                <a href="?page={{add .CurrentPage 1}}" class="pagination-item">Next &raquo;</a>
+            {{end}}
+        </div>
+    {{end}}
+{{end}}

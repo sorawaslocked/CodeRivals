@@ -4,6 +4,7 @@ import (
 	"github.com/sorawaslocked/CodeRivals/internal/dtos"
 	"github.com/sorawaslocked/CodeRivals/internal/validator"
 	"net/http"
+	"strconv"
 )
 
 func (app *Application) login(w http.ResponseWriter, r *http.Request) {
@@ -18,6 +19,7 @@ func (app *Application) loginPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.ErrorLog.Print(err)
 		http.Error(w, "Invalid form data", http.StatusBadRequest)
+
 		return
 	}
 
@@ -36,6 +38,7 @@ func (app *Application) loginPost(w http.ResponseWriter, r *http.Request) {
 
 		app.ErrorLog.Println(err)
 		app.render(w, r, "auth/login.gohtml", data)
+
 		return
 	}
 
@@ -57,6 +60,7 @@ func (app *Application) registerPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.ErrorLog.Print(err)
 		http.Error(w, "Invalid form data", http.StatusBadRequest)
+
 		return
 	}
 
@@ -80,6 +84,7 @@ func (app *Application) registerPost(w http.ResponseWriter, r *http.Request) {
 
 		app.render(w, r, "auth/register.gohtml", data)
 		app.ErrorLog.Print(err)
+
 		return
 	}
 
@@ -87,14 +92,28 @@ func (app *Application) registerPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) problems(w http.ResponseWriter, r *http.Request) {
-	problems, err := app.ProblemService.GetAllProblems()
+	page := 1
+
+	if pageStr := r.URL.Query().Get("page"); pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil {
+			page = p
+		}
+	}
+
+	itemsPerPage := 10
+	offset := (page - 1) * itemsPerPage
+
+	problems, totalItems, err := app.ProblemService.GetPaginatedProblems(offset, itemsPerPage)
 
 	if err != nil {
 		app.ErrorLog.Print(err)
+
+		return
 	}
 
 	data := app.newTemplateData(r)
 	data.Problems = problems
+	data.Pagination = NewPagination(page, totalItems, itemsPerPage, r.URL.Query())
 
 	app.render(w, r, "problem/problems.gohtml", data)
 }
