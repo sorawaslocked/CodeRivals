@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/julienschmidt/httprouter"
 	"github.com/sorawaslocked/CodeRivals/internal/dtos"
 	"github.com/sorawaslocked/CodeRivals/internal/validator"
 	"net/http"
@@ -116,4 +117,32 @@ func (app *Application) problems(w http.ResponseWriter, r *http.Request) {
 	data.Pagination = NewPagination(page, totalItems, itemsPerPage, r.URL.Query())
 
 	app.render(w, r, "problem/problems.gohtml", data)
+}
+
+func (app *Application) showProblem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	id, err := strconv.ParseInt(ps.ByName("id"), 10, 64)
+	if err != nil {
+		app.ErrorLog.Print(err)
+		http.NotFound(w, r)
+		return
+	}
+
+	problem, err := app.ProblemService.GetProblem(int(id))
+	if err != nil {
+		app.ErrorLog.Print(err)
+		http.NotFound(w, r)
+		return
+	}
+
+	examples, err := app.ProblemService.GetProblemExamples(int(id))
+	if err != nil {
+		app.ErrorLog.Print(err)
+	}
+
+	data := &templateData{
+		Form:     problem,
+		Examples: examples,
+	}
+
+	app.render(w, r, "problem/problem.gohtml", data)
 }

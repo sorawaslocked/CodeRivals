@@ -12,6 +12,7 @@ type ProblemRepository interface {
 	GetAll() ([]*entities.Problem, error)
 	Update(problem *entities.Problem) error
 	Delete(id int) error
+	GetProblemExamples(problemID int) ([]entities.ProblemExample, error)
 }
 
 type PGProblemRepository struct {
@@ -103,7 +104,7 @@ func (repo *PGProblemRepository) Get(id int) (*entities.Problem, error) {
 
 func (repo *PGProblemRepository) GetAll() ([]*entities.Problem, error) {
 	probStmt := `SELECT id, title, description, difficulty, url, created_at, updated_at
-	FROM problems ORDER BY id`
+	FROM problems`
 
 	rows, err := repo.db.Query(probStmt)
 
@@ -224,4 +225,30 @@ func (repo *PGProblemRepository) Delete(id int) error {
 	}
 
 	return nil
+}
+
+func (r *PGProblemRepository) GetProblemExamples(problemID int) ([]entities.ProblemExample, error) {
+	rows, err := r.db.Query(`
+		SELECT given, expected, explanation
+		FROM problem_examples
+		WHERE problem_id = $1`, problemID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var examples []entities.ProblemExample
+	for rows.Next() {
+		example := entities.ProblemExample{ProblemID: problemID}
+		err := rows.Scan(&example.Given, &example.Expected, &example.Explanation)
+		if err != nil {
+			return nil, err
+		}
+		examples = append(examples, example)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return examples, nil
 }
