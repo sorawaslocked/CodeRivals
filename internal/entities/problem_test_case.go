@@ -1,8 +1,8 @@
 package entities
 
 type ProblemTestCase struct {
-	ProblemID   int                    `json:"problem_id"`
-	Given       map[string]interface{} `json:"given"`
-	Expected    map[string]interface{} `json:"expected"`
-	Explanation string                 `json:"explanation"`
+	ProblemID  int    `json:"problem_id"`
+	OrderIndex int    `json:"order_index"`
+	Input      string `json:"input"`
+	Output     string `json:"output"`
 }

@@ -9,6 +9,9 @@ type Problem struct {
 	Difficulty  string    `json:"difficulty"`
 	Url         string    `json:"url"`
 	Topics      []*Topic  `json:"topics"`
+	InputTypes  []string  `json:"input_types"`
+	OutputType  string    `json:"output_type"`
+	MethodName  string    `json:"method_name"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
