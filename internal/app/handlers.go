@@ -22,12 +22,16 @@ func (app *Application) loginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	username := r.PostFormValue("username")
+	password := r.PostFormValue("password")
+
 	form := &dtos.UserLoginForm{
-		Username: r.FormValue("username"),
-		Password: r.FormValue("password"),
+		Username: username,
+		Password: password,
 	}
 
 	userId, err := app.AuthService.Login(form)
+
 	if err != nil || !form.Valid() {
 		data := &templateData{
 			Form: form,
@@ -37,11 +41,9 @@ func (app *Application) loginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.InfoLog.Println(userId)
-
 	err = app.Session.RenewToken(r.Context())
 
-	app.Session.Put(r.Context(), "user_id", userId)
+	app.Session.Put(r.Context(), "authenticatedUserId", userId)
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
@@ -64,18 +66,18 @@ func (app *Application) registerPost(w http.ResponseWriter, r *http.Request) {
 	username := r.PostForm.Get("username")
 	email := r.PostForm.Get("email")
 	password := r.PostForm.Get("password")
-	ConfimPassword := r.PostForm.Get("confirmPassword")
+	confirmPassword := r.PostForm.Get("confirmPassword")
 
-	//form := &dtos.UserRegisterForm{
-	//	Username:        r.PostForm.Get("username"),
-	//	Email:           r.PostForm.Get("email"),
-	//	Password:        r.PostForm.Get("password"),
-	//	ConfirmPassword: r.PostForm.Get("confirmPassword"),
-	//}
-
-	form := &dtos.UserRegisterForm{username, email, password, ConfimPassword, validator.Validator{}}
+	form := &dtos.UserRegisterForm{
+		Username:        username,
+		Email:           email,
+		Password:        password,
+		ConfirmPassword: confirmPassword,
+		Validator:       validator.Validator{},
+	}
 
 	err = app.AuthService.Register(form)
+
 	if err != nil || !form.Valid() {
 		data := &templateData{
 			Form: form,

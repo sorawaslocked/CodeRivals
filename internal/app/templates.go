@@ -8,14 +8,15 @@ import (
 )
 
 type templateData struct {
-	CurrentYear int
-	Form        any
-	User        any
+	CurrentYear         int
+	Form                any
+	AuthenticatedUserId uint64
 }
 
 func (app *Application) newTemplateData(r *http.Request) *templateData {
 	return &templateData{
-		CurrentYear: time.Now().Year(),
+		CurrentYear:         time.Now().Year(),
+		AuthenticatedUserId: app.Session.Get(r.Context(), "authenticatedUserId").(uint64),
 	}
 }
 
