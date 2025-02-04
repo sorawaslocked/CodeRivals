@@ -17,7 +17,7 @@ func NewProblemService(repo repositories.ProblemRepository) *ProblemService {
 	}
 }
 
-func (s *ProblemService) GetProblem(id uint64) (*entities.Problem, error) {
+func (s *ProblemService) GetProblem(id int) (*entities.Problem, error) {
 	return s.problemRepo.Get(id)
 }
 
@@ -61,7 +61,7 @@ func (s *ProblemService) UpdateProblem(problem *entities.Problem) error {
 	return s.problemRepo.Update(problem)
 }
 
-func (s *ProblemService) DeleteProblem(id uint64) error {
+func (s *ProblemService) DeleteProblem(id int) error {
 	return s.problemRepo.Delete(id)
 }
 
