@@ -22,10 +22,10 @@ func (app *Application) Routes() http.Handler {
 	router.Handler("GET", "/register", dynamic.ThenFunc(app.register))
 	router.Handler("POST", "/register", dynamic.ThenFunc(app.registerPost))
 	router.Handler("GET", "/problems", dynamic.ThenFunc(app.problems))
-	router.Handler("GET", "/problem/:id", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	router.Handler("GET", "/problem/:id", dynamic.Then(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		params := httprouter.ParamsFromContext(r.Context())
 		app.showProblem(w, r, params)
-	}))
+	})))
 
 	standard := alice.New(app.logRequest)
 

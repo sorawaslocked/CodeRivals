@@ -41,6 +41,7 @@
         <h2 class="text-xl font-semibold mb-4">Examples</h2>
         {{range .Examples}}
         <div class="mb-6 last:mb-0">
+            <p class="font-medium mt-2">Input:</p>
             <div class="bg-gray-50 p-4 rounded-md mb-2">
                 <pre class="whitespace-pre-wrap">{{formatJSON .Given}}</pre>
             </div>
@@ -60,12 +61,6 @@
     <!-- Code Editor Section -->
     <div class="bg-white rounded-lg shadow-md p-6">
         <h2 class="text-xl font-semibold mb-4">Solution</h2>
-        <div class="mb-4">
-            <select class="w-48 p-2 border rounded-md">
-                <option value="go">Go</option>
-                <option value="python">Python</option>
-                <option value="java">Java</option>
-            </select>
         </div>
         <textarea
                 class="w-full h-64 p-4 font-mono bg-gray-50 border rounded-md"
