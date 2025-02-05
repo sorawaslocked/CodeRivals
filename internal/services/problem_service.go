@@ -87,3 +87,7 @@ func (s *ProblemService) CreateProblem(req *dtos.ProblemCreateRequest) error {
 
 	return s.problemRepo.Create(problem)
 }
+
+func (s *ProblemService) GetProblemExamples(problemID int) ([]entities.ProblemExample, error) {
+	return s.problemRepo.GetProblemExamples(problemID)
+}

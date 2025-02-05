@@ -1,6 +1,9 @@
 package app
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"github.com/sorawaslocked/CodeRivals/internal/entities"
 	"html/template"
 	"net/http"
@@ -16,6 +19,7 @@ type templateData struct {
 	AuthenticatedUserId uint64
 	Problems            []*entities.Problem
 	Pagination          Pagination
+	Examples            []entities.ProblemExample
 }
 
 func (app *Application) newTemplateData(r *http.Request) *templateData {
@@ -47,6 +51,26 @@ func (app *Application) InitTemplates() error {
 		"toLowerCase": strings.ToLower,
 		"add":         func(a, b int) int { return a + b },
 		"subtract":    func(a, b int) int { return a - b },
+		"formatJSON": func(v interface{}) string {
+			if v == nil {
+				return ""
+			}
+			switch v := v.(type) {
+			case json.RawMessage:
+				var prettyJSON bytes.Buffer
+				err := json.Indent(&prettyJSON, v, "", "  ")
+				if err != nil {
+					return string(v)
+				}
+				return prettyJSON.String()
+			default:
+				data, err := json.MarshalIndent(v, "", "  ")
+				if err != nil {
+					return fmt.Sprintf("%v", v)
+				}
+				return string(data)
+			}
+		},
 	}
 
 	// Get all page templates
