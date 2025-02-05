@@ -95,3 +95,53 @@ func (s *ProblemService) GetProblemExamples(problemID int) ([]entities.ProblemEx
 func (s *ProblemService) GetProblemByURL(url string) (*entities.Problem, error) {
 	return s.problemRepo.GetByURL(url)
 }
+
+func (s *ProblemService) GetPaginatedProblemsWithTopics(offset, itemsPerPage int, topicIDs []int) ([]*entities.Problem, int, error) {
+	problems, err := s.GetAllProblems()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// If no topics selected, return all problems
+	if len(topicIDs) == 0 {
+		totalProblems := len(problems)
+		if totalProblems < offset {
+			return nil, totalProblems, nil
+		}
+		if totalProblems-itemsPerPage < offset {
+			return problems[offset:], totalProblems, nil
+		}
+		return problems[offset : offset+itemsPerPage], totalProblems, nil
+	}
+
+	// Filter problems by topics
+	var filteredProblems []*entities.Problem
+	for _, problem := range problems {
+		hasAllTopics := true
+		for _, topicID := range topicIDs {
+			found := false
+			for _, problemTopic := range problem.Topics {
+				if problemTopic.ID == topicID {
+					found = true
+					break
+				}
+			}
+			if !found {
+				hasAllTopics = false
+				break
+			}
+		}
+		if hasAllTopics {
+			filteredProblems = append(filteredProblems, problem)
+		}
+	}
+
+	totalProblems := len(filteredProblems)
+	if totalProblems < offset {
+		return nil, totalProblems, nil
+	}
+	if totalProblems-itemsPerPage < offset {
+		return filteredProblems[offset:], totalProblems, nil
+	}
+	return filteredProblems[offset : offset+itemsPerPage], totalProblems, nil
+}
