@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"github.com/lib/pq"
 	"github.com/sorawaslocked/CodeRivals/internal/entities"
 )
 
@@ -10,6 +11,7 @@ type ProblemRepository interface {
 	Create(request *entities.Problem) error
 	Get(id int) (*entities.Problem, error)
 	GetAll() ([]*entities.Problem, error)
+	GetTestCases(problemId int) ([]*entities.ProblemTestCase, error)
 	Update(problem *entities.Problem) error
 	Delete(id int) error
 }
@@ -38,7 +40,7 @@ func (repo *PGProblemRepository) Count() (int, error) {
 	return count, nil
 }
 
-func (repo *PGProblemRepository) Create(problem *entities.Problem) error {
+func (repo *PGProblemRepository) Create(prob *entities.Problem) error {
 	tx, err := repo.db.Begin()
 	if err != nil {
 		return err
@@ -46,16 +48,26 @@ func (repo *PGProblemRepository) Create(problem *entities.Problem) error {
 
 	defer tx.Rollback()
 
-	problemStmt := `INSERT INTO problems (title, description, difficulty, url, created_at, updated_at)
-	VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING id`
+	problemStmt := `INSERT INTO problems (title, description, difficulty, url, input_types, output_type, method_name, created_at, updated_at)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW()) RETURNING id`
 	var problemId int
 
-	err = tx.QueryRow(problemStmt, problem.Title, problem.Description, problem.Difficulty, problem.Url).Scan(&problemId)
+	err = tx.QueryRow(
+		problemStmt,
+		prob.Title,
+		prob.Description,
+		prob.Difficulty,
+		prob.Url,
+		pq.Array(&prob.InputTypes),
+		prob.OutputType,
+		prob.MethodName,
+	).Scan(&problemId)
+
 	if err != nil {
 		return err
 	}
 
-	for _, topic := range problem.Topics {
+	for _, topic := range prob.Topics {
 		topicStmt := `INSERT INTO problem_topics (problem_id, topic_id)
 		VALUES ($1, $2)`
 
@@ -74,7 +86,7 @@ func (repo *PGProblemRepository) Create(problem *entities.Problem) error {
 func (repo *PGProblemRepository) Get(id int) (*entities.Problem, error) {
 	prob := &entities.Problem{}
 
-	probStmt := `SELECT title, description, difficulty, url, created_at, updated_at
+	probStmt := `SELECT title, description, difficulty, url, input_types, output_type, method_name, created_at, updated_at
 	FROM problems WHERE id = $1`
 
 	err := repo.db.QueryRow(probStmt, id).Scan(
@@ -82,6 +94,9 @@ func (repo *PGProblemRepository) Get(id int) (*entities.Problem, error) {
 		&prob.Description,
 		&prob.Difficulty,
 		&prob.Url,
+		pq.Array(&prob.InputTypes),
+		&prob.OutputType,
+		&prob.MethodName,
 		&prob.CreatedAt,
 		&prob.UpdatedAt)
 
@@ -102,7 +117,7 @@ func (repo *PGProblemRepository) Get(id int) (*entities.Problem, error) {
 }
 
 func (repo *PGProblemRepository) GetAll() ([]*entities.Problem, error) {
-	probStmt := `SELECT id, title, description, difficulty, url, created_at, updated_at
+	probStmt := `SELECT id, title, description, difficulty, url, input_types, output_type, method_name, created_at, updated_at
 	FROM problems ORDER BY id`
 
 	rows, err := repo.db.Query(probStmt)
@@ -124,6 +139,9 @@ func (repo *PGProblemRepository) GetAll() ([]*entities.Problem, error) {
 			&prob.Description,
 			&prob.Difficulty,
 			&prob.Url,
+			pq.Array(&prob.InputTypes),
+			&prob.OutputType,
+			&prob.MethodName,
 			&prob.CreatedAt,
 			&prob.UpdatedAt)
 
@@ -155,10 +173,20 @@ func (repo *PGProblemRepository) Update(prob *entities.Problem) error {
 	defer tx.Rollback()
 
 	stmt := `UPDATE problems
-	SET title = $1, description = $2, difficulty = $3, url = $4, updated_at = NOW()
-	WHERE id = $5`
+	SET title = $1, description = $2, difficulty = $3, url = $4, input_types = $5, output_type = $6, method_name = $7, updated_at = NOW()
+	WHERE id = $8`
 
-	_, err = tx.Exec(stmt, prob.Title, prob.Description, prob.Difficulty, prob.Url, prob.ID)
+	_, err = tx.Exec(
+		stmt,
+		prob.Title,
+		prob.Description,
+		prob.Difficulty,
+		prob.Url,
+		pq.Array(&prob.InputTypes),
+		prob.OutputType,
+		prob.MethodName,
+		prob.ID,
+	)
 
 	if err != nil {
 		return err
@@ -224,4 +252,39 @@ func (repo *PGProblemRepository) Delete(id int) error {
 	}
 
 	return nil
+}
+
+func (repo *PGProblemRepository) GetTestCases(problemId int) ([]*entities.ProblemTestCase, error) {
+	stmt := `SELECT order_index, input, output
+	FROM problem_test_cases
+	WHERE problem_id = $1
+	ORDER BY order_index`
+
+	rows, err := repo.db.Query(stmt, problemId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var testCases []*entities.ProblemTestCase
+
+	for rows.Next() {
+		tc := &entities.ProblemTestCase{}
+		tc.ProblemID = problemId
+
+		err = rows.Scan(
+			&tc.OrderIndex,
+			&tc.Input,
+			&tc.Output)
+
+		if err != nil {
+			return nil, err
+		}
+
+		testCases = append(testCases, tc)
+	}
+
+	return testCases, nil
 }
