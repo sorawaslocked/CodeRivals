@@ -19,6 +19,7 @@ type templateData struct {
 	Problems            []*entities.Problem
 	Pagination          Pagination
 	Examples            []entities.ProblemExample
+	UserErrorMessage    string
 }
 
 func (app *Application) newTemplateData(r *http.Request) *templateData {

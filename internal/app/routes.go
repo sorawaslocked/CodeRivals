@@ -27,6 +27,7 @@ func (app *Application) Routes() http.Handler {
 		params := httprouter.ParamsFromContext(r.Context())
 		app.showProblem(w, r, params)
 	})))
+	router.Handler("GET", "/	profile", dynamic.ThenFunc(app.profile))
 
 	standard := alice.New(app.logRequest)
 

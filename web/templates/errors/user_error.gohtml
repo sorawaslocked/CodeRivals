@@ -1,0 +1,15 @@
+{{define "title"}}User Error{{end}}
+
+{{define "styles"}}
+<link rel="stylesheet" href="/static/css/errors.css">
+{{end}}
+
+{{define "content"}}
+<div class="not-found-container">
+    <h1 class="error-code">Error</h1>
+    <h2 class="error-title">{{.UserErrorMessage}}</h2>
+    <p class="error-message">
+        <a href="javascript:history.back()" class="back-link">Go back to previous page</a>
+    </p>
+</div>
+{{end}}

@@ -140,3 +140,11 @@ func (app *Application) showProblem(w http.ResponseWriter, r *http.Request, ps h
 
 	app.render(w, r, "problem/problem.gohtml", data)
 }
+
+func (app *Application) profile(w http.ResponseWriter, r *http.Request) {
+	td := app.newTemplateData(r)
+
+	if td.AuthenticatedUserId == 0 {
+		app.userError(w, r, "You are not authenticated")
+	}
+}
