@@ -15,6 +15,7 @@ type ProblemRepository interface {
 	Update(problem *entities.Problem) error
 	Delete(id int) error
 	GetProblemExamples(problemID int) ([]entities.ProblemExample, error)
+	GetByURL(url string) (*entities.Problem, error)
 }
 
 type PGProblemRepository struct {
@@ -316,4 +317,35 @@ func (repo *PGProblemRepository) GetTestCases(problemId int) ([]*entities.Proble
 	}
 
 	return testCases, nil
+}
+
+func (repo *PGProblemRepository) GetByURL(url string) (*entities.Problem, error) {
+	prob := &entities.Problem{}
+
+	probStmt := `SELECT id, title, description, difficulty, url, input_types, output_type, method_name, created_at, updated_at 
+    FROM problems WHERE url = $1`
+
+	err := repo.db.QueryRow(probStmt, url).Scan(
+		&prob.ID,
+		&prob.Title,
+		&prob.Description,
+		&prob.Difficulty,
+		&prob.Url,
+		pq.Array(&prob.InputTypes),
+		&prob.OutputType,
+		&prob.MethodName,
+		&prob.CreatedAt,
+		&prob.UpdatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	topics, err := repo.topicRepository.GetAllForProblem(prob.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	prob.Topics = topics
+	return prob, nil
 }
