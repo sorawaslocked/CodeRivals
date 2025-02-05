@@ -1,0 +1,27 @@
+{{define "topic_sidebar"}}
+    <div class="topics-sidebar">
+        <div class="topics-search">
+            <input
+                    type="text"
+                    id="topicSearch"
+                    placeholder="Search topics..."
+                    class="topic-search-input"
+            >
+        </div>
+        <div class="topics-list" id="topicsList">
+            {{range .Topics}}
+                <div class="topic-item">
+                    <label class="topic-label">
+                        <input
+                                type="checkbox"
+                                name="topic"
+                                value="{{.ID}}"
+                                class="topic-checkbox"
+                        >
+                        <span class="topic-name">{{.Name}}</span>
+                    </label>
+                </div>
+            {{end}}
+        </div>
+    </div>
+{{end}}

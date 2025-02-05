@@ -46,3 +46,54 @@ main.container {
 .easy { background: #dcfce7; color: #166534; }
 .medium { background: #fef9c3; color: #854d0e; }
 .hard { background: #fee2e2; color: #991b1b; }
+
+/* Topics sidebar styles */
+.topics-sidebar {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+}
+
+.topics-search {
+    margin-bottom: 1rem;
+}
+
+.topic-search-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.topic-search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.topics-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.topic-item {
+    margin-bottom: 0.5rem;
+}
+
+.topic-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.topic-checkbox {
+    cursor: pointer;
+}
+
+.topic-name {
+    font-size: 0.9rem;
+    color: #333;
+}

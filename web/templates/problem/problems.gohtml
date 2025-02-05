@@ -1,18 +1,29 @@
 {{define "title"}}Problems{{end}}
 
 {{define "styles"}}
-<link rel="stylesheet" href="/static/css/problem.css">
+    <link rel="stylesheet" href="/static/css/problem.css">
 {{end}}
 
 {{define "content"}}
-<div class="problems-list">
-    {{range .Problems}}
-        <div class="problem-item">
-            <div class="problem-id">#{{.ID}}</div>
-            <a href="/problems/{{.Url}}" class="problem-title">{{.Title}}</a>
-            <div class="problem-difficulty {{toLowerCase .Difficulty}}">{{.Difficulty}}</div>
+    <div class="problems-container">
+        <aside class="problems-sidebar">
+            {{template "topic_sidebar" .}}
+        </aside>
+        <div class="problems-main">
+            <div class="problems-list">
+                {{range .Problems}}
+                    <div class="problem-item">
+                        <div class="problem-id">#{{.ID}}</div>
+                        <a href="/problems/{{.Url}}" class="problem-title">{{.Title}}</a>
+                        <div class="problem-difficulty {{toLowerCase .Difficulty}}">{{.Difficulty}}</div>
+                    </div>
+                {{end}}
+            </div>
+            {{template "pagination" .Pagination}}
         </div>
-    {{end}}
-    {{template "pagination" .Pagination}}
-</div>
+    </div>
+{{end}}
+
+{{define "scripts"}}
+    <script src="/static/js/topics.js"></script>
 {{end}}
