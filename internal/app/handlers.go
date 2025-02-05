@@ -6,6 +6,7 @@ import (
 	"github.com/sorawaslocked/CodeRivals/internal/validator"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func (app *Application) login(w http.ResponseWriter, r *http.Request) {
@@ -94,26 +95,43 @@ func (app *Application) registerPost(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) problems(w http.ResponseWriter, r *http.Request) {
 	page := 1
-
 	if pageStr := r.URL.Query().Get("page"); pageStr != "" {
 		if p, err := strconv.Atoi(pageStr); err == nil {
 			page = p
 		}
 	}
 
+	// Get selected topics from query
+	var selectedTopicIDs []int
+	if topicsStr := r.URL.Query().Get("topics"); topicsStr != "" {
+		topicStrs := strings.Split(topicsStr, ",")
+		for _, ts := range topicStrs {
+			if id, err := strconv.Atoi(ts); err == nil {
+				selectedTopicIDs = append(selectedTopicIDs, id)
+			}
+		}
+	}
+
 	itemsPerPage := 10
 	offset := (page - 1) * itemsPerPage
 
-	problems, totalItems, err := app.ProblemService.GetPaginatedProblems(offset, itemsPerPage)
-
+	// Get problems with topic filtering
+	problems, totalItems, err := app.ProblemService.GetPaginatedProblemsWithTopics(offset, itemsPerPage, selectedTopicIDs)
 	if err != nil {
 		app.ErrorLog.Print(err)
+		return
+	}
 
+	// Get all topics
+	topics, err := app.TopicService.GetAllTopics()
+	if err != nil {
+		app.ErrorLog.Print(err)
 		return
 	}
 
 	data := app.newTemplateData(r)
 	data.Problems = problems
+	data.Topics = topics
 	data.Pagination = NewPagination(page, totalItems, itemsPerPage, r.URL.Query())
 
 	app.render(w, r, "problem/problems.gohtml", data)

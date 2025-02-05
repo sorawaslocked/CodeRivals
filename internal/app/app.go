@@ -14,6 +14,7 @@ type Application struct {
 	AuthService          *services.AuthService
 	SubmissionService    *services.SubmissionService
 	CodeExecutionService *services.CodeExecutionService
+	TopicService         *services.TopicService
 	LeaderBoardService   *services.LeaderboardService
 	Session              *scs.SessionManager
 	templateCache        map[string]*template.Template

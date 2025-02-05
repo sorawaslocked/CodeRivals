@@ -17,6 +17,7 @@ type templateData struct {
 	Form                any
 	AuthenticatedUserId int
 	Problems            []*entities.Problem
+	Topics              []*entities.Topic
 	Pagination          Pagination
 	Examples            []entities.ProblemExample
 	UserErrorMessage    string
