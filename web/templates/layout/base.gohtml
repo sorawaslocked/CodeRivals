@@ -18,23 +18,13 @@
         <div class="nav-brand">
             <a href="/">CodeRivals</a>
         </div>
-        {{if .User}}
         <div class="nav-menu">
             <a href="/problems">Problems</a>
-            <a href="/contests">Contests</a>
             <a href="/leaderboard">Leaderboard</a>
         </div>
+        {{if ne .AuthenticatedUserId 0}}
         <div class="nav-user">
-            <span class="points">{{.User.Points}} points</span>
-            <div class="dropdown">
-                <button class="dropdown-toggle">{{.User.Username}}</button>
-                <div class="dropdown-menu">
-                    <a href="/profile">Profile</a>
-                    <a href="/submissions">My Submissions</a>
-                    <a href="/settings">Settings</a>
-                    <a href="/logout">Logout</a>
-                </div>
-            </div>
+            <a id=profile-link href="/profile">Profile</a>
         </div>
         {{else}}
         <div class="nav-auth">

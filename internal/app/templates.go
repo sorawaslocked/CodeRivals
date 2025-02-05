@@ -15,8 +15,7 @@ import (
 type templateData struct {
 	CurrentYear         int
 	Form                any
-	User                any
-	AuthenticatedUserId uint64
+	AuthenticatedUserId int
 	Problems            []*entities.Problem
 	Pagination          Pagination
 	Examples            []entities.ProblemExample
@@ -25,7 +24,7 @@ type templateData struct {
 func (app *Application) newTemplateData(r *http.Request) *templateData {
 	userIdFromSession := app.Session.Get(r.Context(), "authenticatedUserId")
 
-	authenticatedUserId, ok := userIdFromSession.(uint64)
+	authenticatedUserId, ok := userIdFromSession.(int)
 	if !ok {
 		authenticatedUserId = 0
 	}

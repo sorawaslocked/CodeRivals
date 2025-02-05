@@ -46,7 +46,7 @@ func (app *Application) loginPost(w http.ResponseWriter, r *http.Request) {
 	err = app.Session.RenewToken(r.Context())
 
 	app.Session.Put(r.Context(), "authenticatedUserId", userId)
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (app *Application) register(w http.ResponseWriter, r *http.Request) {
