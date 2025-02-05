@@ -9,4 +9,7 @@ require (
 	golang.org/x/crypto v0.32.0
 )
 
-require github.com/alexedwards/scs/v2 v2.8.0 // indirect
+require (
+	github.com/alexedwards/scs/v2 v2.8.0 // indirect
+	github.com/traefik/yaegi v0.16.1 // indirect
+)

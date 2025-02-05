@@ -34,16 +34,18 @@ func main() {
 
 	problemService := services.NewProblemService(problemRepository)
 	authService := services.NewAuthService(userRepository)
+	codeExecutionService := services.NewCodeExecutionService()
 
 	session := scs.New()
 	session.Lifetime = 24 * time.Hour
 
 	app := app.Application{
-		ErrorLog:       errorLog,
-		InfoLog:        infoLog,
-		ProblemService: problemService,
-		AuthService:    authService,
-		Session:        session,
+		ErrorLog:             errorLog,
+		InfoLog:              infoLog,
+		ProblemService:       problemService,
+		AuthService:          authService,
+		CodeExecutionService: codeExecutionService,
+		Session:              session,
 	}
 
 	// Initialize templates

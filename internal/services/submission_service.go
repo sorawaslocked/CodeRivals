@@ -17,7 +17,7 @@ func NewSubmissionService(repo *repositories.ProblemSubmissionRepository) *Submi
 }
 
 // Submit creates a new submission for a problem
-func (s *SubmissionService) Submit(userID, problemID uint64, code string) error {
+func (s *SubmissionService) Submit(userID, problemID int, code string) error {
 	if code == "" {
 		return errors.New("code cannot be empty")
 	}
@@ -29,20 +29,24 @@ func (s *SubmissionService) Submit(userID, problemID uint64, code string) error 
 		Status:    "pending", // Initial status
 	}
 
-	return s.submissionRepo.Create(submission)
+	_, err := s.submissionRepo.Create(submission)
+
+	return err
 }
 
 // GetUserSubmission retrieves a specific submission for a user and problem
-func (s *SubmissionService) GetUserSubmission(userID, problemID uint64) (*entities.ProblemSubmission, error) {
+func (s *SubmissionService) GetUserSubmission(userID, problemID int) (*entities.ProblemSubmission, error) {
 	return s.submissionRepo.GetByUserAndProblem(userID, problemID)
 }
 
 // GetAllUserSubmissions retrieves all submissions for a user
-func (s *SubmissionService) GetAllUserSubmissions(userID uint64) ([]*entities.ProblemSubmission, error) {
+func (s *SubmissionService) GetAllUserSubmissions(userID int) ([]*entities.ProblemSubmission, error) {
 	return s.submissionRepo.GettAllByUser(userID)
 }
 
 // UpdateSubmissionStatus updates the status and results of a submission
 func (s *SubmissionService) UpdateSubmissionStatus(submission *entities.ProblemSubmission) error {
-	return s.submissionRepo.Create(submission) // Uses Create since it's upsert-style in the repo
+	_, err := s.submissionRepo.Create(submission) // Uses Create since it's upsert-style in the repo
+
+	return err
 }
