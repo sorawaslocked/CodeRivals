@@ -31,6 +31,7 @@ func main() {
 	topicRepository := repositories.NewPGTopicRepository(db)
 	problemRepository := repositories.NewPGProblemRepository(db, topicRepository)
 	userRepository := repositories.NewPGUserRepository(db)
+	leaderboardService := services.NewLeaderboardService(userRepository)
 
 	problemService := services.NewProblemService(problemRepository)
 	authService := services.NewAuthService(userRepository)
@@ -46,6 +47,7 @@ func main() {
 		AuthService:          authService,
 		CodeExecutionService: codeExecutionService,
 		Session:              session,
+		LeaderBoardService:   leaderboardService,
 	}
 
 	// Initialize templates

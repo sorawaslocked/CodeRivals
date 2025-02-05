@@ -148,3 +148,17 @@ func (app *Application) profile(w http.ResponseWriter, r *http.Request) {
 		app.userError(w, r, "You are not authenticated")
 	}
 }
+
+func (app *Application) showLeaderboard(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	users, err := app.LeaderBoardService.GetLeaderboard()
+	if err != nil {
+		app.ErrorLog.Print(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	data := app.newTemplateData(r)
+	data.Users = users
+
+	app.render(w, r, "leaderboard/leaderboard.gohtml", data)
+}

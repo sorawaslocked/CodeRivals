@@ -18,7 +18,7 @@ type UserRepository interface {
 	Update(user *entities.User) error
 	UpdatePoints(id int, points int) error
 	Delete(id int) error
-
+	GetUserRankings() ([]*entities.User, error)
 	// User engagement
 	//GetComments(userID uint64) ([]*entities.Comment, error)
 }
@@ -210,4 +210,34 @@ func (repo *PGUserRepository) Delete(id int) error {
 	}
 
 	return tx.Commit()
+}
+
+func (repo *PGUserRepository) GetUserRankings() ([]*entities.User, error) {
+	query := `
+        SELECT id, username, points
+        FROM users
+        ORDER BY points DESC
+        LIMIT 100`
+
+	rows, err := repo.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*entities.User
+	for rows.Next() {
+		user := &entities.User{}
+		err := rows.Scan(
+			&user.ID,
+			&user.Username,
+			&user.Points,
+		)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
 }
