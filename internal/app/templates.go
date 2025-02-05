@@ -114,6 +114,8 @@ func (app *Application) InitTemplates() error {
 }
 
 func (app *Application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 	// Get requested template from cache
 	ts, ok := app.templateCache[filepath.Base(name)]
 	if !ok {
