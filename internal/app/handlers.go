@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"github.com/sorawaslocked/CodeRivals/internal/dtos"
 	"github.com/sorawaslocked/CodeRivals/internal/validator"
@@ -179,4 +180,48 @@ func (app *Application) showLeaderboard(w http.ResponseWriter, r *http.Request, 
 	data.Users = users
 
 	app.render(w, r, "leaderboard/leaderboard.gohtml", data)
+}
+
+func (app *Application) submitSolution(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userId := app.Session.GetInt(r.Context(), "authenticatedUserId")
+	if userId == 0 {
+		http.Error(w, "You are not authenticated", http.StatusUnauthorized)
+		return
+	}
+
+	problemUrl := ps.ByName("url")
+	problem, err := app.ProblemService.GetProblemByURL(problemUrl)
+	if err != nil {
+		app.ErrorLog.Print(err)
+		http.Error(w, "Problem not found", http.StatusNotFound)
+		return
+	}
+
+	err = r.ParseForm()
+	if err != nil {
+		app.ErrorLog.Print(err)
+		http.Error(w, "Invalid form data", http.StatusBadRequest)
+		return
+	}
+
+	code := r.PostFormValue("code")
+	if code == "" {
+		http.Error(w, "Code can't be empty", http.StatusBadRequest)
+		return
+	}
+
+	err = app.SubmissionService.Submit(userId, problem.ID, code)
+	if err != nil {
+		app.ErrorLog.Print(err)
+		http.Error(w, "Failed to submit solution", http.StatusInternalServerError)
+		return
+	}
+
+	app.Session.Put(r.Context(), "flash", "Solution submitted successfully!")
+	http.Redirect(w, r, fmt.Sprintf("/problems/%s", problemUrl), http.StatusSeeOther)
 }
