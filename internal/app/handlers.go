@@ -170,26 +170,19 @@ func (app *Application) profile(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) userSubmissions(w http.ResponseWriter, r *http.Request) {
 	// Get authenticated user ID from session
-	userID := app.Session.Get(r.Context(), "authenticatedUserId")
-	//print(userID)
-	if userID == nil {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
-	}
+	td := app.newTemplateData(r)
 
-	// Convert interface{} to int
-	uid, ok := userID.(int)
-	if !ok {
-		app.ErrorLog.Print("Failed to convert user ID to int")
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
+	uid := td.AuthenticatedUserId
+
+	if uid == 0 {
+		app.userError(w, r, "You are not authenticated")
 	}
 
 	// Get submissions for the user
 	submissions, err := app.SubmissionService.GetAllUserSubmissions(uid)
 	if err != nil {
 		app.ErrorLog.Print(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		app.serverError(w, r)
 		return
 	}
 
