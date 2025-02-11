@@ -1,7 +1,9 @@
 package services
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/sorawaslocked/CodeRivals/internal/entities"
 	"github.com/sorawaslocked/CodeRivals/internal/repositories"
 )
@@ -9,31 +11,51 @@ import (
 type SubmissionService struct {
 	submissionRepo *repositories.ProblemSubmissionRepository
 	problemService *ProblemService
+	userRepo       repositories.UserRepository
+	execService    *CodeExecutionService
+	problemRepo    repositories.ProblemRepository
+	testCaseRepo   repositories.ProblemTestCaseRepository
 }
 
-func NewSubmissionService(repo *repositories.ProblemSubmissionRepository, problemService *ProblemService) *SubmissionService {
+func NewSubmissionService(repo *repositories.ProblemSubmissionRepository, problemService *ProblemService, userRepo repositories.UserRepository, execService *CodeExecutionService, problemRepo repositories.ProblemRepository, testCaseRepo repositories.ProblemTestCaseRepository) *SubmissionService {
 	return &SubmissionService{
 		submissionRepo: repo,
 		problemService: problemService,
+		userRepo:       userRepo,
+		execService:    execService,
+		problemRepo:    problemRepo,
+		testCaseRepo:   testCaseRepo,
 	}
 }
 
 // Submit creates a new submission for a problem
-func (s *SubmissionService) Submit(userID, problemID int, code string) error {
+func (s *SubmissionService) Submit(userID, problemID int, code string) (*entities.ProblemSubmission, error) {
 	if code == "" {
-		return errors.New("code cannot be empty")
+		return nil, errors.New("code cannot be empty")
 	}
 
 	submission := &entities.ProblemSubmission{
 		UserID:    userID,
 		ProblemID: problemID,
 		Code:      code,
-		Status:    "pending", // Initial status
 	}
 
-	_, err := s.submissionRepo.Create(submission)
+	problem, err := s.problemRepo.Get(problemID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get problem: %w", err)
+	}
 
-	return err
+	testCases, err := s.testCaseRepo.GetTestCasesByProblemID(problem.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get test cases: %w", err)
+	}
+
+	err = s.ProcessSubmission(problem, testCases, submission)
+	if err != nil {
+		return nil, fmt.Errorf("failed to process submission: %w", err)
+	}
+
+	return submission, nil
 }
 
 // GetUserSubmission retrieves a specific submission for a user and problem
@@ -72,4 +94,56 @@ func (s *SubmissionService) UpdateSubmissionStatus(submission *entities.ProblemS
 	_, err := s.submissionRepo.Create(submission) // Uses Create since it's upsert-style in the repo
 
 	return err
+}
+
+func (s *SubmissionService) ProcessSubmission(problem *entities.Problem, testCases []*entities.ProblemTestCase, submission *entities.ProblemSubmission) error {
+	result := s.execService.ExecuteSolution(problem, testCases, submission)
+
+	submission.Runtime = uint32(result.TimeMS)
+	submission.Memory = uint32(result.MemoryKB)
+
+	if result.Error != "" {
+		submission.Status = "error"
+		submission.Error = result.Error
+	} else if result.Success {
+		submission.Status = "accepted"
+
+		points := getPointsForDifficulty(problem.Difficulty)
+		if err := s.userRepo.AddPoints(submission.UserID, points); err != nil {
+			return fmt.Errorf("failed to award points: %w", err)
+		}
+	} else {
+		submission.Status = "wrong_answer"
+		for _, testResult := range result.TestResults {
+			if !testResult.Passed {
+				errorInfo := map[string]interface{}{
+					"input":    testResult.Input,
+					"expected": testResult.Expected,
+					"output":   testResult.Actual,
+				}
+				errorJSON, err := json.Marshal(errorInfo)
+				if err != nil {
+					return fmt.Errorf("failed to marshal test results: %w", err)
+				}
+				submission.Error = string(errorJSON)
+				break
+			}
+		}
+	}
+
+	_, err := s.submissionRepo.Create(submission)
+	return err
+}
+
+func getPointsForDifficulty(difficulty string) int {
+	switch difficulty {
+	case "Easy":
+		return 100
+	case "Medium":
+		return 300
+	case "Hard":
+		return 500
+	default:
+		return 0
+	}
 }

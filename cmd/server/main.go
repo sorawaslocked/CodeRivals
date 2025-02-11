@@ -32,13 +32,14 @@ func main() {
 	problemRepository := repositories.NewPGProblemRepository(db, topicRepository)
 	userRepository := repositories.NewPGUserRepository(db)
 	submissionRepository := repositories.NewProblemSubmissionRepository(db)
+	problemTestCaseRepository := repositories.NewProblemTestCaseRepository(db)
 
 	leaderboardService := services.NewLeaderboardService(userRepository)
 	problemService := services.NewProblemService(problemRepository)
 	authService := services.NewAuthService(userRepository)
 	codeExecutionService := services.NewCodeExecutionService()
 	topicService := services.NewTopicService(topicRepository)
-	submissionService := services.NewSubmissionService(submissionRepository, problemService)
+	submissionService := services.NewSubmissionService(submissionRepository, problemService, userRepository, codeExecutionService, problemRepository, problemTestCaseRepository)
 
 	session := scs.New()
 	session.Lifetime = 24 * time.Hour
