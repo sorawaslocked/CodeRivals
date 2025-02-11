@@ -50,7 +50,7 @@
 .submissions-list th,
 .submissions-list td {
     padding: 1rem;
-    text-align: left;
+    text-align: centerr;
     border-bottom: 1px solid #eee;
 }
 
@@ -150,4 +150,24 @@
 .page-info {
     color: #666;
     font-size: 0.9rem;
+}
+
+.create-solution-btn {
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.create-solution-btn:hover {
+    background-color: #1565c0;
+}
+
+.create-solution-btn:active {
+    background-color: #0d47a1;
 }

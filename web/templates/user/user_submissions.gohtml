@@ -12,21 +12,17 @@
       <table>
         <thead>
         <tr>
-          <th>Status</th>
           <th>Problem</th>
+          <th>Status</th>
           <th>Runtime</th>
           <th>Memory</th>
           <th>Submitted</th>
+          <th>Create Solution</th>
         </tr>
         </thead>
         <tbody>
         {{range .Submissions}}
           <tr class="submission-row">
-            <td>
-              <span class="status-badge {{.Submission.Status}}">
-                  {{.Submission.Status}}
-              </span>
-            </td>
             <td>
               <a href="/problems/{{.Problem.Url}}" class="problem-link">{{.Problem.Title}}</a>
             </td>
@@ -42,12 +38,14 @@
                   {{.Submission.SubmittedAt.Format "2006-01-02 15:04:05"}}
               </span>
             </td>
-            <td>
-              <form action="/createSolution" method="post">
-                <input type="hidden" name="submissionId" value="{{.Submission.ID}}">
-                <button type="submit">Create Solution</button>
-              </form>
-            </td>
+            {{ if eq .Submission.Status "accepted" }}
+              <td>
+                <form action="/createSolution" method="post">
+                  <input type="hidden" name="submissionId" value="{{.Submission.ID}}">
+                  <button type="submit" class="create-solution-btn">Create</button>
+                </form>
+              </td>
+            {{end}}
           </tr>
         {{else}}
           <tr>
