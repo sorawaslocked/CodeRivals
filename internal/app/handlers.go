@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"github.com/sorawaslocked/CodeRivals/internal/dtos"
 	"github.com/sorawaslocked/CodeRivals/internal/entities"
@@ -197,6 +196,12 @@ func (app *Application) userSubmissions(w http.ResponseWriter, r *http.Request) 
 func (app *Application) testExecution(w http.ResponseWriter, r *http.Request) {}
 
 func (app *Application) showLeaderboard(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	userId := app.Session.GetInt(r.Context(), "authenticatedUserId")
+	if userId == 0 {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
 	users, err := app.LeaderBoardService.GetLeaderboard()
 	if err != nil {
 		app.ErrorLog.Print(err)
@@ -218,7 +223,7 @@ func (app *Application) postSubmission(w http.ResponseWriter, r *http.Request, p
 
 	userId := app.Session.GetInt(r.Context(), "authenticatedUserId")
 	if userId == 0 {
-		http.Error(w, "You are not authenticated", http.StatusUnauthorized)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
@@ -243,7 +248,7 @@ func (app *Application) postSubmission(w http.ResponseWriter, r *http.Request, p
 		return
 	}
 
-	err = app.SubmissionService.Submit(userId, problem.ID, code)
+	_, err = app.SubmissionService.Submit(userId, problem.ID, code)
 	if err != nil {
 		app.ErrorLog.Print(err)
 		http.Error(w, "Failed to submit solution", http.StatusInternalServerError)
@@ -251,7 +256,7 @@ func (app *Application) postSubmission(w http.ResponseWriter, r *http.Request, p
 	}
 
 	app.Session.Put(r.Context(), "flash", "Solution submitted successfully!")
-	http.Redirect(w, r, fmt.Sprintf("/problems/%s", problemUrl), http.StatusSeeOther)
+	http.Redirect(w, r, "/submissions", http.StatusSeeOther)
 }
 
 func (app *Application) createSolution(w http.ResponseWriter, r *http.Request) {

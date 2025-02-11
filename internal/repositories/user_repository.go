@@ -21,6 +21,7 @@ type UserRepository interface {
 	GetUserRankings() ([]*entities.User, error)
 	// User engagement
 	//GetComments(userID uint64) ([]*entities.Comment, error)
+	AddPoints(userID int, points int) error
 }
 
 type PGUserRepository struct {
@@ -240,4 +241,14 @@ func (repo *PGUserRepository) GetUserRankings() ([]*entities.User, error) {
 	}
 
 	return users, nil
+}
+
+func (repo *PGUserRepository) AddPoints(userID int, points int) error {
+	query := `
+		UPDATE users
+		SET points = points + $1
+		WHERE id = $2`
+
+	_, err := repo.db.Exec(query, points, userID)
+	return err
 }
