@@ -168,6 +168,40 @@ func (app *Application) profile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *Application) userSubmissions(w http.ResponseWriter, r *http.Request) {
+	// Get authenticated user ID from session
+	userID := app.Session.Get(r.Context(), "authenticatedUserId")
+	//print(userID)
+	if userID == nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	// Convert interface{} to int
+	uid, ok := userID.(int)
+	if !ok {
+		app.ErrorLog.Print("Failed to convert user ID to int")
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	// Get submissions for the user
+	submissions, err := app.SubmissionService.GetAllUserSubmissions(uid)
+	if err != nil {
+		app.ErrorLog.Print(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	// Prepare template data
+	data := app.newTemplateData(r)
+	data.Submissions = submissions
+
+	app.render(w, r, "user/user_submissions.gohtml", data)
+}
+
+func (app *Application) testExecution(w http.ResponseWriter, r *http.Request) {}
+
 func (app *Application) showLeaderboard(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	users, err := app.LeaderBoardService.GetLeaderboard()
 	if err != nil {
