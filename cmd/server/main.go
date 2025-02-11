@@ -31,12 +31,14 @@ func main() {
 	topicRepository := repositories.NewPGTopicRepository(db)
 	problemRepository := repositories.NewPGProblemRepository(db, topicRepository)
 	userRepository := repositories.NewPGUserRepository(db)
-	leaderboardService := services.NewLeaderboardService(userRepository)
+	submissionRepository := repositories.NewProblemSubmissionRepository(db)
 
+	leaderboardService := services.NewLeaderboardService(userRepository)
 	problemService := services.NewProblemService(problemRepository)
 	authService := services.NewAuthService(userRepository)
 	codeExecutionService := services.NewCodeExecutionService()
 	topicService := services.NewTopicService(topicRepository)
+	submissionService := services.NewSubmissionService(submissionRepository)
 
 	session := scs.New()
 	session.Lifetime = 24 * time.Hour
@@ -48,6 +50,7 @@ func main() {
 		AuthService:          authService,
 		CodeExecutionService: codeExecutionService,
 		TopicService:         topicService,
+		SubmissionService:    submissionService,
 		Session:              session,
 		LeaderBoardService:   leaderboardService,
 	}
