@@ -23,18 +23,18 @@
         {{range .Submissions}}
           <tr class="submission-row">
             <td>
-                    <span class="status-badge {{.Status}}">
-                        {{.Status}}
+                    <span class="status-badge {{.Submission.Status}}">
+                        {{.Submission.Status}}
                     </span>
             </td>
             <td>
-              <a href="/problems/{{.ProblemID}}" class="problem-link">Problem #{{.ProblemID}}</a>
+              <a href="/problems/{{.Problem.Url}}" class="problem-link">{{.Problem.Title}}</a>
             </td>
-            <td>{{.Runtime}} ms</td>
-            <td>{{.Memory}} KB</td>
+            <td>{{.Submission.Runtime}} ms</td>
+            <td>{{.Submission.Memory}} KB</td>
             <td>
-                    <span class="timestamp" title="{{.SubmittedAt.Format "2006-01-02 15:04:05"}}">
-                        {{.SubmittedAt.Format "2006-01-02 15:04:05"}}
+                    <span class="timestamp" title="{{.Submission.SubmittedAt.Format "2006-01-02 15:04:05"}}">
+                        {{.Submission.SubmittedAt.Format "2006-01-02 15:04:05"}}
                     </span>
             </td>
           </tr>

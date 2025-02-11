@@ -58,18 +58,21 @@ func (r *ProblemSubmissionRepository) GetByID(id int) (*entities.ProblemSubmissi
 }
 
 func (r *ProblemSubmissionRepository) GetByUserAndProblem(userID, problemID int) (*entities.ProblemSubmission, error) {
-	submission := &entities.ProblemSubmission{}
+	submission := &entities.ProblemSubmission{
+		UserID:    userID,
+		ProblemID: problemID,
+	}
 	query := `
-		SELECT user_id, problem_id, code, status, runtime_ms, memory_kb, submitted_at, error
+		SELECT id, code, status, runtime_ms, memory_kb, submitted_at, error
 		FROM problem_submissions WHERE user_id = $1 AND problem_id = $2`
 
 	err := r.db.QueryRow(query, userID, problemID).Scan(
 		&submission.ID,
-		&submission.UserID,
-		&submission.ProblemID,
 		&submission.Code,
 		&submission.Status,
 		&submission.Runtime,
+		&submission.Memory,
+		&submission.SubmittedAt,
 		&submission.Error,
 	)
 
@@ -83,9 +86,9 @@ func (r *ProblemSubmissionRepository) GetByUserAndProblem(userID, problemID int)
 	return submission, nil
 }
 
-func (r *ProblemSubmissionRepository) GettAllByUser(userID int) ([]*entities.ProblemSubmission, error) {
+func (r *ProblemSubmissionRepository) GetAllByUser(userID int) ([]*entities.ProblemSubmission, error) {
 	query := `
-		SELECT user_id, problem_id, code, status, runtime_ms, memory_kb, submitted_at, error
+		SELECT id, problem_id, code, status, runtime_ms, memory_kb, submitted_at, error
 		FROM problem_submissions 
 		WHERE user_id = $1
 		ORDER BY problem_id`
@@ -98,16 +101,21 @@ func (r *ProblemSubmissionRepository) GettAllByUser(userID int) ([]*entities.Pro
 
 	var submissions []*entities.ProblemSubmission
 	for rows.Next() {
-		submission := &entities.ProblemSubmission{}
+		submission := &entities.ProblemSubmission{
+			UserID: userID,
+		}
+
 		err := rows.Scan(
 			&submission.ID,
-			&submission.UserID,
 			&submission.ProblemID,
 			&submission.Code,
 			&submission.Status,
 			&submission.Runtime,
+			&submission.Memory,
+			&submission.SubmittedAt,
 			&submission.Error,
 		)
+
 		if err != nil {
 			return nil, err
 		}

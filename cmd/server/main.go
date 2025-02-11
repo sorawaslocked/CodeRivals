@@ -38,7 +38,7 @@ func main() {
 	authService := services.NewAuthService(userRepository)
 	codeExecutionService := services.NewCodeExecutionService()
 	topicService := services.NewTopicService(topicRepository)
-	submissionService := services.NewSubmissionService(submissionRepository)
+	submissionService := services.NewSubmissionService(submissionRepository, problemService)
 
 	session := scs.New()
 	session.Lifetime = 24 * time.Hour

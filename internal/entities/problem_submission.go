@@ -13,3 +13,8 @@ type ProblemSubmission struct {
 	SubmittedAt time.Time `json:"submitted_at"`
 	Error       string    `json:"error"`
 }
+
+type FullProblemSubmission struct {
+	Submission *ProblemSubmission `json:"submission"`
+	Problem    *Problem           `json:"problem"`
+}

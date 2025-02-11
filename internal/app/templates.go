@@ -22,7 +22,7 @@ type templateData struct {
 	Examples            []entities.ProblemExample
 	UserErrorMessage    string
 	Users               []*entities.User
-	Submissions         []*entities.ProblemSubmission
+	Submissions         []*entities.FullProblemSubmission
 }
 
 func (app *Application) newTemplateData(r *http.Request) *templateData {

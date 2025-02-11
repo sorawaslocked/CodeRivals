@@ -8,11 +8,13 @@ import (
 
 type SubmissionService struct {
 	submissionRepo *repositories.ProblemSubmissionRepository
+	problemService *ProblemService
 }
 
-func NewSubmissionService(repo *repositories.ProblemSubmissionRepository) *SubmissionService {
+func NewSubmissionService(repo *repositories.ProblemSubmissionRepository, problemService *ProblemService) *SubmissionService {
 	return &SubmissionService{
 		submissionRepo: repo,
+		problemService: problemService,
 	}
 }
 
@@ -40,8 +42,29 @@ func (s *SubmissionService) GetUserSubmission(userID, problemID int) (*entities.
 }
 
 // GetAllUserSubmissions retrieves all submissions for a user
-func (s *SubmissionService) GetAllUserSubmissions(userID int) ([]*entities.ProblemSubmission, error) {
-	return s.submissionRepo.GettAllByUser(userID)
+func (s *SubmissionService) GetAllUserSubmissions(userID int) ([]*entities.FullProblemSubmission, error) {
+	submissions, err := s.submissionRepo.GetAllByUser(userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var fullSubmissions []*entities.FullProblemSubmission
+
+	for _, submission := range submissions {
+		problem, err := s.problemService.GetProblem(submission.ProblemID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		fullSubmissions = append(fullSubmissions, &entities.FullProblemSubmission{
+			Submission: submission,
+			Problem:    problem,
+		})
+	}
+
+	return fullSubmissions, nil
 }
 
 // UpdateSubmissionStatus updates the status and results of a submission
