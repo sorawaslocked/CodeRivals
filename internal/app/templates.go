@@ -13,16 +13,17 @@ import (
 )
 
 type templateData struct {
-	CurrentYear         int
-	Form                any
-	AuthenticatedUserId int
-	Problems            []*entities.Problem
-	Topics              []*entities.Topic
-	Pagination          Pagination
-	Examples            []entities.ProblemExample
-	UserErrorMessage    string
-	Users               []*entities.User
-	Submissions         []*entities.FullProblemSubmission
+	CurrentYear           int
+	Form                  any
+	AuthenticatedUserId   int
+	Problems              []*entities.Problem
+	Topics                []*entities.Topic
+	Pagination            Pagination
+	Examples              []entities.ProblemExample
+	UserErrorMessage      string
+	Users                 []*entities.User
+	Submissions           []*entities.FullProblemSubmission
+	SubmissionForSolution *entities.FullProblemSubmission
 }
 
 func (app *Application) newTemplateData(r *http.Request) *templateData {

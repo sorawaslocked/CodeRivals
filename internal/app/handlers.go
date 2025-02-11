@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"github.com/sorawaslocked/CodeRivals/internal/dtos"
+	"github.com/sorawaslocked/CodeRivals/internal/entities"
 	"github.com/sorawaslocked/CodeRivals/internal/validator"
 	"net/http"
 	"strconv"
@@ -251,4 +252,73 @@ func (app *Application) postSubmission(w http.ResponseWriter, r *http.Request, p
 
 	app.Session.Put(r.Context(), "flash", "Solution submitted successfully!")
 	http.Redirect(w, r, fmt.Sprintf("/problems/%s", problemUrl), http.StatusSeeOther)
+}
+
+func (app *Application) createSolution(w http.ResponseWriter, r *http.Request) {
+	templateData := app.newTemplateData(r)
+
+	formId := r.PostFormValue("submissionId")
+
+	id, err := strconv.Atoi(formId)
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	var submission *entities.ProblemSubmission
+	submission, err = app.SubmissionService.GetSubmission(id)
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	var problem *entities.Problem
+	problem, err = app.ProblemService.GetProblem(submission.ProblemID)
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	templateData.SubmissionForSolution = &entities.FullProblemSubmission{
+		Submission: submission,
+		Problem:    problem,
+	}
+
+	app.render(w, r, "user/solution_form.gohtml", templateData)
+}
+
+func (app *Application) postSolution(w http.ResponseWriter, r *http.Request) {
+	formId := r.PostFormValue("submissionId")
+	//title := r.PostFormValue("title")
+	//description := r.PostFormValue("description")
+
+	id, err := strconv.Atoi(formId)
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	var submission *entities.ProblemSubmission
+	submission, err = app.SubmissionService.GetSubmission(id)
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	var problem *entities.Problem
+	problem, err = app.ProblemService.GetProblem(submission.ProblemID)
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	// create solution
+
+	http.Redirect(w, r, fmt.Sprintf("/problems/%s", problem.Url), http.StatusSeeOther)
 }

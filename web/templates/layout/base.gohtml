@@ -21,6 +21,9 @@
         <div class="nav-menu">
             <a href="/problems">Problems</a>
             <a href="/leaderboard">Leaderboard</a>
+            {{if ne .AuthenticatedUserId 0}}
+            <a href="/submissions">My Submissions</a>
+            {{end}}
         </div>
         {{if ne .AuthenticatedUserId 0}}
         <div class="nav-user">

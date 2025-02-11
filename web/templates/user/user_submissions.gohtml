@@ -43,8 +43,8 @@
               </span>
             </td>
             <td>
-              <form action="/solution" method="post">
-                <input type="hidden" value="{{.Submission.ID}}">
+              <form action="/createSolution" method="post">
+                <input type="hidden" name="submissionId" value="{{.Submission.ID}}">
                 <button type="submit">Create Solution</button>
               </form>
             </td>

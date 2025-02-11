@@ -41,14 +41,14 @@ func (r *ProblemSubmissionRepository) GetByID(id int) (*entities.ProblemSubmissi
 	FROM problem_submissions WHERE id = $1`
 
 	err := r.db.QueryRow(stmt, id).Scan(
-		submission.UserID,
-		submission.ProblemID,
-		submission.Code,
-		submission.Status,
-		submission.Runtime,
-		submission.Memory,
-		submission.SubmittedAt,
-		submission.Error)
+		&submission.UserID,
+		&submission.ProblemID,
+		&submission.Code,
+		&submission.Status,
+		&submission.Runtime,
+		&submission.Memory,
+		&submission.SubmittedAt,
+		&submission.Error)
 
 	if err != nil {
 		return nil, err

@@ -1,0 +1,56 @@
+{{define "title"}}Post Solution{{end}}
+
+{{define "styles"}}
+<link rel="stylesheet" href="/static/css/solution.css">
+{{end}}
+
+{{define "content"}}
+    <div class="solution-form">
+        <h1>Post Your Solution</h1>
+
+        <form action="/solution" method="POST">
+            <input type="hidden" name="submissionId" value="{{.SubmissionForSolution.Submission.ID}}">
+
+            {{if .Form}}
+                <div class="error-message">{{.Form.Error}}</div>
+            {{end}}
+
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        required
+                        value="{{ with .Form}}{{ .Title}}{{end}}"
+                        placeholder="Give your solution a descriptive title"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea
+                        id="description"
+                        name="description"
+                        required
+                        placeholder="Explain your approach and any important implementation details"
+                >{{ with .Form}}{{ .Description}}{{end}}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="code">Your Solution Code</label>
+                <textarea
+                        id="code"
+                        name="code"
+                        class="code-display"
+                        required
+                >{{.SubmissionForSolution.Submission.Code}}</textarea>
+            </div>
+
+            <div class="form-actions">
+                <a href="/submissions" class="btn btn-link">Cancel</a>
+                <button type="submit" class="btn btn-primary">Post Solution</button>
+            </div>
+        </form>
+    </div>
+{{end}}

@@ -36,6 +36,10 @@ func (s *SubmissionService) Submit(userID, problemID int, code string) error {
 	return err
 }
 
+func (s *SubmissionService) GetSubmission(submissionID int) (*entities.ProblemSubmission, error) {
+	return s.submissionRepo.GetByID(submissionID)
+}
+
 // GetUserSubmission retrieves a specific submission for a user and problem
 func (s *SubmissionService) GetUserSubmission(userID, problemID int) (*entities.ProblemSubmission, error) {
 	return s.submissionRepo.GetByUserAndProblem(userID, problemID)
