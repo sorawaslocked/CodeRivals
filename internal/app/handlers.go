@@ -216,7 +216,7 @@ func (app *Application) showLeaderboard(w http.ResponseWriter, r *http.Request, 
 	app.render(w, r, "leaderboard/leaderboard.gohtml", data)
 }
 
-func (app *Application) submitSolution(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (app *Application) postSubmission(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
 		return
