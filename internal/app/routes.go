@@ -35,6 +35,7 @@ func (app *Application) Routes() http.Handler {
 		params := httprouter.ParamsFromContext(r.Context())
 		app.submitSolution(w, r, params)
 	})))
+	router.Handler("GET", "/submissions", dynamic.ThenFunc(app.userSubmissions))
 	standard := alice.New(app.logRequest)
 
 	return standard.Then(router)
