@@ -145,3 +145,7 @@ func (s *ProblemService) GetPaginatedProblemsWithTopics(offset, itemsPerPage int
 	}
 	return filteredProblems[offset : offset+itemsPerPage], totalProblems, nil
 }
+
+func (s *ProblemService) CreateProblemSolution(solution *entities.ProblemSolution) error {
+	return s.problemRepo.CreateProblemSolution(solution)
+}

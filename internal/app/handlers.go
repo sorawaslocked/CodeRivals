@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"github.com/sorawaslocked/CodeRivals/internal/dtos"
 	"github.com/sorawaslocked/CodeRivals/internal/entities"
@@ -260,7 +261,7 @@ func (app *Application) postSubmission(w http.ResponseWriter, r *http.Request, p
 }
 
 func (app *Application) createSolution(w http.ResponseWriter, r *http.Request) {
-	templateData := app.newTemplateData(r)
+	td := app.newTemplateData(r)
 
 	formId := r.PostFormValue("submissionId")
 
@@ -287,18 +288,20 @@ func (app *Application) createSolution(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r)
 	}
 
-	templateData.SubmissionForSolution = &entities.FullProblemSubmission{
+	td.SubmissionForSolution = &entities.FullProblemSubmission{
 		Submission: submission,
 		Problem:    problem,
 	}
 
-	app.render(w, r, "user/solution_form.gohtml", templateData)
+	app.render(w, r, "user/solution_form.gohtml", td)
 }
 
 func (app *Application) postSolution(w http.ResponseWriter, r *http.Request) {
+	td := app.newTemplateData(r)
+
 	formId := r.PostFormValue("submissionId")
-	//title := r.PostFormValue("title")
-	//description := r.PostFormValue("description")
+	title := r.PostFormValue("title")
+	description := r.PostFormValue("description")
 
 	id, err := strconv.Atoi(formId)
 
@@ -324,6 +327,21 @@ func (app *Application) postSolution(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// create solution
+
+	solution := &entities.ProblemSolution{
+		ProblemId:   problem.ID,
+		UserId:      td.AuthenticatedUserId,
+		Title:       title,
+		Description: description,
+		Code:        submission.Code,
+	}
+
+	err = app.ProblemService.CreateProblemSolution(solution)
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
 
 	http.Redirect(w, r, fmt.Sprintf("/problems/%s", problem.Url), http.StatusSeeOther)
 }

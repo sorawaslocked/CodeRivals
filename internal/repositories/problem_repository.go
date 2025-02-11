@@ -16,6 +16,7 @@ type ProblemRepository interface {
 	Delete(id int) error
 	GetProblemExamples(problemID int) ([]entities.ProblemExample, error)
 	GetByURL(url string) (*entities.Problem, error)
+	CreateProblemSolution(solution *entities.ProblemSolution) error
 }
 
 type PGProblemRepository struct {
@@ -348,4 +349,22 @@ func (repo *PGProblemRepository) GetByURL(url string) (*entities.Problem, error)
 
 	prob.Topics = topics
 	return prob, nil
+}
+
+func (repo *PGProblemRepository) CreateProblemSolution(solution *entities.ProblemSolution) error {
+	stmt := `INSERT INTO problem_solutions (problem_id, user_id, title, description, code, votes)
+	VALUES ($1, $2, $3, $4, $5, 0)`
+
+	_, err := repo.db.Exec(stmt,
+		solution.ProblemId,
+		solution.UserId,
+		solution.Title,
+		solution.Description,
+		solution.Code)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
