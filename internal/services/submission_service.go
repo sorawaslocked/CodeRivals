@@ -107,14 +107,26 @@ func (s *SubmissionService) ProcessSubmission(problem *entities.Problem, testCas
 	submission.Memory = uint32(result.MemoryKB)
 
 	if result.Error != "" {
-		submission.Status = "error"
+		submission.Status = "time_limit"
 		submission.Error = result.Error
 	} else if result.Success {
 		submission.Status = "accepted"
 
-		points := getPointsForDifficulty(problem.Difficulty)
-		if err := s.userRepo.AddPoints(submission.UserID, points); err != nil {
-			return fmt.Errorf("failed to award points: %w", err)
+		previousSubmission, err := s.submissionRepo.GetByUserAndProblem(submission.UserID, submission.ProblemID)
+		if err != nil {
+			if err.Error() == "Submission not found" {
+				points := getPointsForDifficulty(problem.Difficulty)
+				if err := s.userRepo.AddPoints(submission.UserID, points); err != nil {
+					return fmt.Errorf("failed to award points: %w", err)
+				}
+			} else {
+				return fmt.Errorf("failed to check previous submissions: %w", err)
+			}
+		} else if previousSubmission.Status != "accepted" {
+			points := getPointsForDifficulty(problem.Difficulty)
+			if err := s.userRepo.AddPoints(submission.UserID, points); err != nil {
+				return fmt.Errorf("failed to award points: %w", err)
+			}
 		}
 	} else {
 		submission.Status = "wrong_answer"
@@ -134,7 +146,6 @@ func (s *SubmissionService) ProcessSubmission(problem *entities.Problem, testCas
 			}
 		}
 	}
-
 	_, err := s.submissionRepo.Create(submission)
 	return err
 }
