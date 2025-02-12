@@ -9,3 +9,8 @@ type ProblemSolution struct {
 	Code        string `json:"code"`
 	Votes       int    `json:"votes"`
 }
+
+type ProblemSolutionDisplay struct {
+	Solution    *ProblemSolution `json:"solution"`
+	SubmittedBy string           `json:"submittedBy"`
+}

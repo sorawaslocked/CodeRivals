@@ -46,6 +46,7 @@ func (app *Application) Routes() http.Handler {
 		params := httprouter.ParamsFromContext(r.Context())
 		app.deleteComment(w, r, params)
 	})))
+	router.Handler("GET", "/problems/:url/solutions", dynamic.Then(http.HandlerFunc(app.solutions)))
 
 	standard := alice.New(app.logRequest)
 

@@ -1,0 +1,28 @@
+{{define "title"}}Solutions{{end}}
+
+{{define "styles"}}
+<link rel="stylesheet" href="/static/css/solutions.css">
+{{end}}
+
+{{define "content"}}
+<div class="solutions-header">
+    <h1>Solutions for {{.ProblemTitle}}</h1>
+</div>
+
+<div class="solutions-list">
+    {{range .Solutions}}
+    <div class="solution-card">
+        <div class="vote-section">
+            <span class="vote-count">{{.Solution.Votes}}</span>
+            <span>votes</span>
+        </div>
+        <div class="solution-content">
+            <a href="/solutions/{{.Solution.ID}}" class="solution-title">{{.Solution.Title}}</a>
+            <div class="solution-meta">
+                Submitted by {{.SubmittedBy}}
+            </div>
+        </div>
+    </div>
+    {{end}}
+</div>
+{{end}}

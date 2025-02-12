@@ -462,3 +462,47 @@ func (app *Application) deleteComment(w http.ResponseWriter, r *http.Request, ps
 	// Redirect back to the previous page
 	http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
 }
+
+func (app *Application) solutions(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	url := params.ByName("url")
+
+	problem, err := app.ProblemService.GetProblemByURL(url)
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	var solutions []*entities.ProblemSolution
+	solutions, err = app.ProblemService.GetSolutionsForProblem(problem.ID)
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	var fullSolutions []*entities.ProblemSolutionDisplay
+
+	for _, solution := range solutions {
+		user, err := app.AuthService.GetUser(solution.UserId)
+
+		if err != nil {
+			app.ErrorLog.Print(err)
+			app.serverError(w, r)
+		}
+
+		fullSolution := &entities.ProblemSolutionDisplay{
+			Solution:    solution,
+			SubmittedBy: user.Username,
+		}
+
+		fullSolutions = append(fullSolutions, fullSolution)
+	}
+
+	td := app.newTemplateData(r)
+	td.Solutions = fullSolutions
+	td.ProblemTitle = problem.Title
+
+	app.render(w, r, "problem/solutions.gohtml", td)
+}

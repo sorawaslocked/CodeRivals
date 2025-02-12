@@ -25,6 +25,8 @@ type templateData struct {
 	Submissions           []*entities.FullProblemSubmission
 	SubmissionForSolution *entities.FullProblemSubmission
 	Comments              []entities.Comment
+	ProblemTitle          string
+	Solutions             []*entities.ProblemSolutionDisplay
 }
 
 func (app *Application) newTemplateData(r *http.Request) *templateData {

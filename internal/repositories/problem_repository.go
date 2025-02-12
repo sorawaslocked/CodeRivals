@@ -17,6 +17,7 @@ type ProblemRepository interface {
 	GetProblemExamples(problemID int) ([]entities.ProblemExample, error)
 	GetByURL(url string) (*entities.Problem, error)
 	CreateProblemSolution(solution *entities.ProblemSolution) error
+	GetSolutionsForProblem(problemId int) ([]*entities.ProblemSolution, error)
 }
 
 type PGProblemRepository struct {
@@ -367,4 +368,45 @@ func (repo *PGProblemRepository) CreateProblemSolution(solution *entities.Proble
 	}
 
 	return nil
+}
+
+func (repo *PGProblemRepository) GetSolutionsForProblem(problemId int) ([]*entities.ProblemSolution, error) {
+	stmt := `SELECT id, user_id, title, description, code, votes FROM problem_solutions
+	WHERE problem_id = $1
+	ORDER BY votes DESC`
+
+	rows, err := repo.db.Query(stmt, problemId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var solutions []*entities.ProblemSolution
+
+	for rows.Next() {
+		sol := &entities.ProblemSolution{}
+		sol.ProblemId = problemId
+
+		err = rows.Scan(
+			&sol.ID,
+			&sol.UserId,
+			&sol.Title,
+			&sol.Description,
+			&sol.Code,
+			&sol.Votes)
+
+		if err != nil {
+			return nil, err
+		}
+
+		solutions = append(solutions, sol)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return solutions, nil
 }
