@@ -196,10 +196,19 @@ func (s *CodeExecutionService) ExecuteSolution(problem *entities.Problem, testCa
 	runtime.ReadMemStats(&m)
 	memoryUsed := (m.Alloc - startMemory) / 1024 // Convert to KB
 
+	var totalTime int64
+
+	for _, tr := range results {
+		totalTime += tr.TimeMS
+	}
+
+	avgTime := totalTime / int64(len(results))
+
 	return ExecutionResult{
 		Success:     success,
 		TestResults: results,
 		MemoryKB:    int(memoryUsed),
+		TimeMS:      avgTime,
 		Error:       testError,
 	}
 }
