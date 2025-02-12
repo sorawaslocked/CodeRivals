@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func (app *Application) login(w http.ResponseWriter, r *http.Request) {
@@ -167,6 +168,27 @@ func (app *Application) profile(w http.ResponseWriter, r *http.Request) {
 	if td.AuthenticatedUserId == 0 {
 		app.userError(w, r, "You are not authenticated")
 	}
+
+	// Get user information using AuthService
+	user, err := app.AuthService.GetUser(td.AuthenticatedUserId)
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+		return
+	}
+
+	// Update template to use Form for passing data, following existing pattern
+	td.Form = struct {
+		Username  string
+		Points    int
+		CreatedAt time.Time
+	}{
+		Username:  user.Username,
+		Points:    user.Points,
+		CreatedAt: user.CreatedAt,
+	}
+
+	app.render(w, r, "user/profile.gohtml", td)
 }
 
 func (app *Application) userSubmissions(w http.ResponseWriter, r *http.Request) {

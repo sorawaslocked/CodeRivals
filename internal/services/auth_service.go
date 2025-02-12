@@ -17,6 +17,10 @@ func NewAuthService(userRepo repositories.UserRepository) *AuthService {
 	return &AuthService{userRepo: userRepo}
 }
 
+func (s *AuthService) GetUser(id int) (*entities.User, error) {
+	return s.userRepo.Get(id)
+}
+
 func (s *AuthService) Login(f *dtos.UserLoginForm) (int, error) {
 	f.Validator.Check(v.NotBlank(f.Username), "username", "Username should not be blank")
 
