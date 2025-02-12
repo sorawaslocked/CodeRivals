@@ -167,6 +167,7 @@ func (app *Application) profile(w http.ResponseWriter, r *http.Request) {
 
 	if td.AuthenticatedUserId == 0 {
 		app.userError(w, r, "You are not authenticated")
+		return
 	}
 
 	// Get user information using AuthService
