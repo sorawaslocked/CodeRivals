@@ -7,6 +7,7 @@ import (
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
 	"reflect"
+	"runtime"
 	"time"
 )
 
@@ -147,6 +148,11 @@ func (s *CodeExecutionService) ExecuteSolution(problem *entities.Problem, testCa
 		}
 	}
 
+	// Get initial memory usage
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	startMemory := m.Alloc
+
 	results := make([]*TestResult, len(testCases))
 	success := true
 
@@ -184,8 +190,13 @@ func (s *CodeExecutionService) ExecuteSolution(problem *entities.Problem, testCa
 		}
 	}
 
+	// Get final memory usage after all test cases
+	runtime.ReadMemStats(&m)
+	memoryUsed := (m.Alloc - startMemory) / 1024 // Convert to KB
+
 	return ExecutionResult{
 		Success:     success,
 		TestResults: results,
+		MemoryKB:    int(memoryUsed),
 	}
 }
