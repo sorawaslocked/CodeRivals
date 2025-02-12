@@ -187,7 +187,8 @@ func (s *CodeExecutionService) ExecuteSolution(problem *entities.Problem, testCa
 
 		if !passed {
 			success = false
-			testError = result.(string)
+			testError, _ = result.(string)
+
 			break
 		}
 	}
@@ -199,7 +200,9 @@ func (s *CodeExecutionService) ExecuteSolution(problem *entities.Problem, testCa
 	var totalTime int64
 
 	for _, tr := range results {
-		totalTime += tr.TimeMS
+		if tr != nil {
+			totalTime += tr.TimeMS
+		}
 	}
 
 	avgTime := totalTime / int64(len(results))
