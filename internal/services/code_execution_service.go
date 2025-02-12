@@ -155,6 +155,7 @@ func (s *CodeExecutionService) ExecuteSolution(problem *entities.Problem, testCa
 
 	results := make([]*TestResult, len(testCases))
 	success := true
+	var testError string
 
 	for idx, tc := range testCases {
 		start := time.Now()
@@ -186,6 +187,7 @@ func (s *CodeExecutionService) ExecuteSolution(problem *entities.Problem, testCa
 
 		if !passed {
 			success = false
+			testError = result.(string)
 			break
 		}
 	}
@@ -198,5 +200,6 @@ func (s *CodeExecutionService) ExecuteSolution(problem *entities.Problem, testCa
 		Success:     success,
 		TestResults: results,
 		MemoryKB:    int(memoryUsed),
+		Error:       testError,
 	}
 }
