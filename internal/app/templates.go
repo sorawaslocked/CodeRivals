@@ -26,6 +26,9 @@ type templateData struct {
 	SubmissionForSolution *entities.FullProblemSubmission
 	Comments              []entities.Comment
 	ProblemTitle          string
+	ProblemUrl            string
+	Solution              *entities.ProblemSolution
+	SolutionSubmittedBy   string
 	Solutions             []*entities.ProblemSolutionDisplay
 }
 

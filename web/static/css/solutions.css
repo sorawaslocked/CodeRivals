@@ -64,3 +64,116 @@
 .solution-author:hover {
     text-decoration: underline;
 }
+
+.solution-detail-container {
+    max-width: 900px;
+    margin: 2rem auto;
+}
+
+.solution-detail-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.solution-detail-problem-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 1.1rem;
+}
+
+.solution-detail-problem-link:hover {
+    text-decoration: underline;
+}
+
+.solution-detail-title {
+    margin: 1rem 0;
+    font-size: 2rem;
+    color: var(--text-color);
+}
+
+.solution-detail-meta {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.solution-detail-author {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.solution-detail-author:hover {
+    text-decoration: underline;
+}
+
+.solution-detail-vote {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.solution-detail-vote-count {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.solution-detail-content {
+    margin-top: 2rem;
+}
+
+.solution-detail-description {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    line-height: 1.7;
+}
+
+.solution-detail-code {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.solution-detail-code-header {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.solution-detail-code-title {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.solution-detail-copy-btn {
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.solution-detail-copy-btn:hover {
+    background: #f5f5f5;
+}
+
+.solution-detail-code-content {
+    padding: 1.5rem;
+    overflow-x: auto;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}

@@ -506,3 +506,47 @@ func (app *Application) solutions(w http.ResponseWriter, r *http.Request) {
 
 	app.render(w, r, "problem/solutions.gohtml", td)
 }
+
+func (app *Application) solution(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	id := params.ByName("id")
+
+	solutionId, err := strconv.Atoi(id)
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	var solution *entities.ProblemSolution
+	solution, err = app.ProblemService.GetSolutionById(solutionId)
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	var problem *entities.Problem
+	problem, err = app.ProblemService.GetProblem(solution.ProblemId)
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	var user *entities.User
+	user, err = app.AuthService.GetUser(solution.UserId)
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	td := app.newTemplateData(r)
+	td.Solution = solution
+	td.ProblemTitle = problem.Title
+	td.ProblemUrl = problem.Url
+	td.SolutionSubmittedBy = user.Username
+
+	app.render(w, r, "problem/solution.gohtml", td)
+}

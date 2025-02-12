@@ -1,0 +1,60 @@
+{{define "title"}}{{.Solution.Title}}{{end}}
+
+{{define "styles"}}
+<link rel="stylesheet" href="/static/css/solutions.css">
+{{end}}
+
+
+{{define "content"}}
+    <div class="solution-detail-container">
+        <div class="solution-detail-header">
+            <a href="/problems/{{.ProblemUrl}}" class="solution-detail-problem-link">
+                {{.ProblemTitle}}
+            </a>
+            <h1 class="solution-detail-title">{{.Solution.Title}}</h1>
+            <div class="solution-detail-meta">
+                <span class="solution-detail-author">By {{.SolutionSubmittedBy}}</span>
+                <div class="solution-detail-vote">
+                    <span class="solution-detail-vote-count">{{.Solution.Votes}}</span>
+                    <span>votes</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="solution-detail-content">
+            {{if .Solution.Description}}
+                <div class="solution-detail-description">
+                    {{.Solution.Description}}
+                </div>
+            {{end}}
+
+            <div class="solution-detail-code">
+                <div class="solution-detail-code-header">
+                    <span class="solution-detail-code-title">Solution Code</span>
+                    <button class="solution-detail-copy-btn" onclick="copySolutionCode()">
+                        Copy Code
+                    </button>
+                </div>
+                <div class="solution-detail-code-content">{{.Solution.Code}}</div>
+            </div>
+        </div>
+    </div>
+{{end}}
+
+{{define "scripts"}}
+    <script>
+        function copySolutionCode() {
+            const codeContent = document.querySelector('.solution-detail-code-content').textContent;
+            navigator.clipboard.writeText(codeContent).then(() => {
+                const copyButton = document.querySelector('.solution-detail-copy-btn');
+                const originalText = copyButton.textContent;
+                copyButton.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyButton.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy code:', err);
+            });
+        }
+    </script>
+{{end}}

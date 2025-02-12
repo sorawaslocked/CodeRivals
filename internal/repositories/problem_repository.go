@@ -18,6 +18,7 @@ type ProblemRepository interface {
 	GetByURL(url string) (*entities.Problem, error)
 	CreateProblemSolution(solution *entities.ProblemSolution) error
 	GetSolutionsForProblem(problemId int) ([]*entities.ProblemSolution, error)
+	GetSolutionById(id int) (*entities.ProblemSolution, error)
 }
 
 type PGProblemRepository struct {
@@ -409,4 +410,26 @@ func (repo *PGProblemRepository) GetSolutionsForProblem(problemId int) ([]*entit
 	}
 
 	return solutions, nil
+}
+
+func (repo *PGProblemRepository) GetSolutionById(id int) (*entities.ProblemSolution, error) {
+	stmt := `SELECT problem_id, user_id, title, description, code, votes FROM problem_solutions
+	WHERE id = $1`
+
+	sol := &entities.ProblemSolution{}
+	sol.ID = id
+
+	err := repo.db.QueryRow(stmt, id).Scan(
+		&sol.ProblemId,
+		&sol.UserId,
+		&sol.Title,
+		&sol.Description,
+		&sol.Code,
+		&sol.Votes)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return sol, nil
 }

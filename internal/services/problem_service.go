@@ -153,3 +153,7 @@ func (s *ProblemService) CreateProblemSolution(solution *entities.ProblemSolutio
 func (s *ProblemService) GetSolutionsForProblem(problemId int) ([]*entities.ProblemSolution, error) {
 	return s.problemRepo.GetSolutionsForProblem(problemId)
 }
+
+func (s *ProblemService) GetSolutionById(id int) (*entities.ProblemSolution, error) {
+	return s.problemRepo.GetSolutionById(id)
+}
