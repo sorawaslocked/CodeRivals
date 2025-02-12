@@ -96,6 +96,26 @@ func (app *Application) registerPost(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
+func (app *Application) home(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+
+	// Get top 5 users for the leaderboard section
+	topUsers, err := app.LeaderBoardService.GetLeaderboard()
+	if err != nil {
+		app.ErrorLog.Print(err)
+	}
+	data.Users = topUsers
+
+	// Get first 5 problems for the featured problems section
+	problems, _, err := app.ProblemService.GetPaginatedProblems(0, 5)
+	if err != nil {
+		app.ErrorLog.Print(err)
+	}
+	data.Problems = problems
+
+	app.render(w, r, "home/home.gohtml", data)
+}
+
 func (app *Application) problems(w http.ResponseWriter, r *http.Request) {
 	page := 1
 	if pageStr := r.URL.Query().Get("page"); pageStr != "" {
