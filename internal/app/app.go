@@ -18,4 +18,5 @@ type Application struct {
 	LeaderBoardService   *services.LeaderboardService
 	Session              *scs.SessionManager
 	templateCache        map[string]*template.Template
+	CommentService       *services.CommentService
 }

@@ -33,6 +33,7 @@ func main() {
 	userRepository := repositories.NewPGUserRepository(db)
 	submissionRepository := repositories.NewProblemSubmissionRepository(db)
 	problemTestCaseRepository := repositories.NewProblemTestCaseRepository(db)
+	commentRepository := repositories.NewCommentRepository(db)
 
 	leaderboardService := services.NewLeaderboardService(userRepository)
 	problemService := services.NewProblemService(problemRepository)
@@ -40,6 +41,7 @@ func main() {
 	codeExecutionService := services.NewCodeExecutionService()
 	topicService := services.NewTopicService(topicRepository)
 	submissionService := services.NewSubmissionService(submissionRepository, problemService, userRepository, codeExecutionService, problemRepository, problemTestCaseRepository)
+	commentService := services.NewCommentService(commentRepository)
 
 	session := scs.New()
 	session.Lifetime = 24 * time.Hour
@@ -54,6 +56,7 @@ func main() {
 		SubmissionService:    submissionService,
 		Session:              session,
 		LeaderBoardService:   leaderboardService,
+		CommentService:       commentService,
 	}
 
 	// Initialize templates

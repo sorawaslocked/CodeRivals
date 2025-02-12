@@ -38,6 +38,14 @@ func (app *Application) Routes() http.Handler {
 	router.Handler("GET", "/submissions", dynamic.ThenFunc(app.userSubmissions))
 	router.Handler("POST", "/createSolution", dynamic.ThenFunc(app.createSolution))
 	router.Handler("POST", "/solution", dynamic.ThenFunc(app.postSolution))
+	router.Handler("POST", "/problems/:url/comments", dynamic.Then(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		params := httprouter.ParamsFromContext(r.Context())
+		app.createComment(w, r, params)
+	})))
+	router.Handler("POST", "/comments/delete", dynamic.Then(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		params := httprouter.ParamsFromContext(r.Context())
+		app.deleteComment(w, r, params)
+	})))
 
 	standard := alice.New(app.logRequest)
 
