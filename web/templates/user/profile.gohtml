@@ -1,0 +1,37 @@
+{{define "title"}}Profile{{end}}
+
+{{define "styles"}}
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/profile.css">
+{{end}}
+
+{{define "content"}}
+    <div class="profile-container">
+        <div class="profile-box">
+            <div class="profile-header">
+                <h1>Profile</h1>
+            </div>
+
+            <div class="profile-content">
+                <div class="profile-field">
+                    <div class="profile-label">Username</div>
+                    <div class="profile-value">{{.Form.Username}}</div>
+                </div>
+
+                <div class="profile-field">
+                    <div class="profile-label">Points</div>
+                    <div class="profile-value">{{.Form.Points}}</div>
+                </div>
+
+                <div class="profile-field">
+                    <div class="profile-label">Member Since</div>
+                    <div class="profile-value">{{.Form.CreatedAt.Format "January 2, 2006"}}</div>
+                </div>
+
+                <a href="/submissions" class="profile-link">
+                    View My Submissions →
+                </a>
+            </div>
+        </div>
+    </div>
+{{end}}
