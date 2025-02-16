@@ -57,3 +57,43 @@
     margin-top: 0.5rem;
     font-size: 0.875rem;
 }
+
+.solution-detail-vote {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.vote-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    color: var(--text-color);
+}
+
+.vote-button:hover {
+    background-color: rgba(74, 144, 226, 0.1);
+    color: var(--primary-color);
+}
+
+.vote-button.active {
+    color: var(--primary-color);
+}
+
+.vote-button.active.downvote {
+    color: var(--error-color);
+}
+
+.solution-detail-vote-count {
+    font-weight: bold;
+    min-width: 2rem;
+    text-align: center;
+}
+
+.vote-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

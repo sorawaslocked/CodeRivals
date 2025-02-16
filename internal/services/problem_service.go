@@ -161,3 +161,27 @@ func (s *ProblemService) GetSolutionById(id int) (*entities.ProblemSolution, err
 func (s *ProblemService) GetUpvoteBySolutionIdAndUserId(solutionId int, userId int) (bool, error) {
 	return s.problemRepo.GetUpvoteBySolutionIdAndUserId(solutionId, userId)
 }
+
+func (s *ProblemService) UpvoteSolution(solutionId int, userId int) error {
+	err := s.problemRepo.UpsertSolutionVote(solutionId, userId, true)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *ProblemService) DownvoteSolution(solutionId int, userId int) error {
+	err := s.problemRepo.UpsertSolutionVote(solutionId, userId, false)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *ProblemService) UnvoteSolution(solutionId int, userId int) error {
+	return s.problemRepo.RemoveSolutionVote(solutionId, userId)
+}

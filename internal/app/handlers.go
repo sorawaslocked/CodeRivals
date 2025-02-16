@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"github.com/sorawaslocked/CodeRivals/internal/dtos"
@@ -583,4 +584,72 @@ func (app *Application) solution(w http.ResponseWriter, r *http.Request) {
 	td.SolutionVoteStatus = voteStatus
 
 	app.render(w, r, "problem/solution.gohtml", td)
+}
+
+func (app *Application) handleSolutionVote(w http.ResponseWriter, r *http.Request) {
+	ps := httprouter.ParamsFromContext(r.Context())
+	idString := ps.ByName("id")
+
+	id, err := strconv.Atoi(idString)
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	td := app.newTemplateData(r)
+
+	if td.AuthenticatedUserId == 0 {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+
+		return
+	}
+
+	var voteReq entities.SolutionVoteRequest
+
+	if err = json.NewDecoder(r.Body).Decode(&voteReq); err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	switch {
+	case voteReq.Upvoted:
+		err = app.ProblemService.UpvoteSolution(id, td.AuthenticatedUserId)
+		if err != nil {
+			app.ErrorLog.Print(err)
+			app.serverError(w, r)
+		}
+	case voteReq.Downvoted:
+		err = app.ProblemService.DownvoteSolution(id, td.AuthenticatedUserId)
+		if err != nil {
+			app.ErrorLog.Print(err)
+			app.serverError(w, r)
+		}
+	default:
+		err = app.ProblemService.UnvoteSolution(id, td.AuthenticatedUserId)
+		if err != nil {
+			app.ErrorLog.Print(err)
+			app.serverError(w, r)
+		}
+	}
+
+	var solution *entities.ProblemSolution
+	solution, err = app.ProblemService.GetSolutionById(id)
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	response := entities.SolutionVoteResponse{
+		Upvoted:   voteReq.Upvoted,
+		Downvoted: voteReq.Downvoted,
+		Votes:     solution.Votes,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err = json.NewEncoder(w).Encode(response); err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
 }

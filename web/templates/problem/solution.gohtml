@@ -15,8 +15,17 @@
             <div class="solution-detail-meta">
                 <span class="solution-detail-author">By {{.SolutionSubmittedBy}}</span>
                 <div class="solution-detail-vote">
+                    <button class="vote-button upvote {{if .SolutionVoteStatus.Upvoted}}active{{end}}" data-vote="up">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 4l8 8h-6v8h-4v-8H4l8-8z"/>
+                        </svg>
+                    </button>
                     <span class="solution-detail-vote-count">{{.Solution.Votes}}</span>
-                    <span>votes</span>
+                    <button class="vote-button downvote {{if .SolutionVoteStatus.Downvoted}}active{{end}}" data-vote="down">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 20l-8-8h6V4h4v8h6l-8 8z"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -56,5 +65,77 @@
                 console.error('Failed to copy code:', err);
             });
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const voteButtons = document.querySelectorAll('.vote-button');
+            const voteCount = document.querySelector('.solution-detail-vote-count');
+
+            voteButtons.forEach(button => {
+                button.addEventListener('click', async function() {
+                    if (!{{.AuthenticatedUserId}}) {
+                        window.location.href = '/login';
+                        return;
+                    }
+
+                    const voteType = this.dataset.vote;
+                    const solutionId = {{.Solution.ID}};
+
+                    // Get current vote status
+                    const upvoteButton = document.querySelector('.upvote');
+                    const downvoteButton = document.querySelector('.downvote');
+                    const isCurrentlyUpvoted = upvoteButton.classList.contains('active');
+                    const isCurrentlyDownvoted = downvoteButton.classList.contains('active');
+
+                    // Determine new vote status
+                    let newVoteStatus = {
+                        upvoted: false,
+                        downvoted: false
+                    };
+
+                    if (voteType === 'up') {
+                        // If already upvoted, remove the vote
+                        // If not upvoted, add upvote and remove any downvote
+                        newVoteStatus.upvoted = !isCurrentlyUpvoted;
+                    } else {
+                        // If already downvoted, remove the vote
+                        // If not downvoted, add downvote and remove any upvote
+                        newVoteStatus.downvoted = !isCurrentlyDownvoted;
+                    }
+
+                    try {
+                        // Disable buttons during request
+                        voteButtons.forEach(btn => btn.disabled = true);
+
+                        const response = await fetch('/api/solutions/' + solutionId + '/vote', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(newVoteStatus)
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Vote failed');
+                        }
+
+                        const data = await response.json();
+
+                        // Update vote count
+                        voteCount.textContent = data.votes;
+
+                        // Update button states based on response
+                        upvoteButton.classList.toggle('active', data.upvoted);
+                        downvoteButton.classList.toggle('active', data.downvoted);
+
+                    } catch (error) {
+                        console.error('Error voting:', error);
+                        alert('Failed to vote. Please try again.');
+                    } finally {
+                        // Re-enable buttons
+                        voteButtons.forEach(btn => btn.disabled = false);
+                    }
+                });
+            });
+        });
     </script>
 {{end}}

@@ -19,8 +19,10 @@ type ProblemRepository interface {
 	CreateProblemSolution(solution *entities.ProblemSolution) error
 	GetSolutionsForProblem(problemId int) ([]*entities.ProblemSolution, error)
 	GetSolutionById(id int) (*entities.ProblemSolution, error)
-	GetVoteCountBySolutionId(solutionId int) (int, error)
+	GetVotesBySolutionId(solutionId int) (int, error)
 	GetUpvoteBySolutionIdAndUserId(solutionId int, userId int) (bool, error)
+	UpsertSolutionVote(solutionId int, userId int, upvote bool) error
+	RemoveSolutionVote(solutionId int, userId int) error
 }
 
 type PGProblemRepository struct {
@@ -357,7 +359,7 @@ func (repo *PGProblemRepository) GetByURL(url string) (*entities.Problem, error)
 
 func (repo *PGProblemRepository) CreateProblemSolution(solution *entities.ProblemSolution) error {
 	stmt := `INSERT INTO problem_solutions (problem_id, user_id, title, description, code)
-	VALUES ($1, $2, $3, $4, $5, 0)`
+	VALUES ($1, $2, $3, $4, $5)`
 
 	_, err := repo.db.Exec(stmt,
 		solution.ProblemId,
@@ -375,8 +377,7 @@ func (repo *PGProblemRepository) CreateProblemSolution(solution *entities.Proble
 
 func (repo *PGProblemRepository) GetSolutionsForProblem(problemId int) ([]*entities.ProblemSolution, error) {
 	stmt := `SELECT id, user_id, title, description, code FROM problem_solutions
-	WHERE problem_id = $1
-	ORDER BY votes DESC`
+	WHERE problem_id = $1`
 
 	rows, err := repo.db.Query(stmt, problemId)
 
@@ -404,7 +405,7 @@ func (repo *PGProblemRepository) GetSolutionsForProblem(problemId int) ([]*entit
 		}
 
 		var votes int
-		votes, err = repo.GetVoteCountBySolutionId(sol.ID)
+		votes, err = repo.GetVotesBySolutionId(sol.ID)
 
 		if err != nil {
 			return nil, err
@@ -441,7 +442,7 @@ func (repo *PGProblemRepository) GetSolutionById(id int) (*entities.ProblemSolut
 	}
 
 	var votes int
-	votes, err = repo.GetVoteCountBySolutionId(sol.ID)
+	votes, err = repo.GetVotesBySolutionId(sol.ID)
 
 	if err != nil {
 		return nil, err
@@ -452,21 +453,36 @@ func (repo *PGProblemRepository) GetSolutionById(id int) (*entities.ProblemSolut
 	return sol, nil
 }
 
-func (repo *PGProblemRepository) GetVoteCountBySolutionId(solutionId int) (int, error) {
-	stmt := `SELECT COUNT(*) WHERE solution_id = $1`
+func (repo *PGProblemRepository) GetVotesBySolutionId(solutionId int) (int, error) {
+	stmt := `SELECT COUNT(*)
+ 	FROM problem_solution_votes
+ 	WHERE solution_id = $1 AND upvote`
 
-	var count int
-	err := repo.db.QueryRow(stmt, solutionId).Scan(&count)
+	var posCount int
+	err := repo.db.QueryRow(stmt, solutionId).Scan(&posCount)
 
 	if err != nil {
 		return 0, err
 	}
 
-	return count, nil
+	stmt = `SELECT COUNT(*)
+	FROM problem_solution_votes
+	WHERE solution_id = $1 AND NOT upvote`
+
+	var negCount int
+	err = repo.db.QueryRow(stmt, solutionId).Scan(&negCount)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return posCount - negCount, nil
 }
 
 func (repo *PGProblemRepository) GetUpvoteBySolutionIdAndUserId(solutionId int, userId int) (bool, error) {
-	stmt := `SELECT upvote WHERE solution_id = $1 AND user_id = $2`
+	stmt := `SELECT upvote
+	FROM problem_solution_votes
+	WHERE solution_id = $1 AND user_id = $2`
 
 	var upvote bool
 	err := repo.db.QueryRow(stmt, solutionId, userId).Scan(&upvote)
@@ -476,4 +492,46 @@ func (repo *PGProblemRepository) GetUpvoteBySolutionIdAndUserId(solutionId int, 
 	}
 
 	return upvote, nil
+}
+
+func (repo *PGProblemRepository) UpsertSolutionVote(solutionId int, userId int, upvote bool) error {
+	_, err := repo.GetUpvoteBySolutionIdAndUserId(solutionId, userId)
+
+	if err == nil {
+		stmt := `UPDATE problem_solution_votes
+		SET upvote = $1
+		WHERE solution_id = $2 AND user_id = $3`
+
+		_, err = repo.db.Exec(stmt, upvote, solutionId, userId)
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	stmt := `INSERT INTO problem_solution_votes (solution_id, user_id, upvote)
+	VALUES ($1, $2, $3)`
+
+	_, err = repo.db.Exec(stmt, solutionId, userId, upvote)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo *PGProblemRepository) RemoveSolutionVote(solutionId int, userId int) error {
+	stmt := `DELETE FROM problem_solution_votes
+	WHERE solution_id = $1 AND user_id = $2`
+
+	_, err := repo.db.Exec(stmt, solutionId, userId)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

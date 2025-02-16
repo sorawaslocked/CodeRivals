@@ -19,3 +19,14 @@ type ProblemSolutionVoteStatus struct {
 	Upvoted   bool `json:"upvoted"`
 	Downvoted bool `json:"downvoted"`
 }
+
+type SolutionVoteRequest struct {
+	Upvoted   bool `json:"upvoted"`
+	Downvoted bool `json:"downvoted"`
+}
+
+type SolutionVoteResponse struct {
+	Upvoted   bool `json:"upvoted"`
+	Downvoted bool `json:"downvoted"`
+	Votes     int  `json:"votes"`
+}
