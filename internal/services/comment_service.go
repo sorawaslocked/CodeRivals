@@ -23,11 +23,11 @@ func (s *CommentService) CreateComment(userID, problemID int, text string) error
 	return s.repo.Create(comment)
 }
 
-func (s *CommentService) CreateReply(userID, problemID int, parentCommentID int, text string) error {
+func (s *CommentService) CreateReply(userID, problemID int, text string, parentCommentID *int) error {
 	comment := &entities.Comment{
 		UserID:    userID,
 		ProblemID: problemID,
-		CommentID: &parentCommentID,
+		CommentID: parentCommentID,
 		TextValue: text,
 	}
 	return s.repo.Create(comment)

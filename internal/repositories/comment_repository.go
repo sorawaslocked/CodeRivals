@@ -56,7 +56,10 @@ func (r *CommentRepositoryImpl) GetByProblemID(problemID int) ([]entities.Commen
         FROM comments c
         JOIN users u on u.id = c.user_id
         WHERE problem_id = $1
-        ORDER BY id DESC`
+        ORDER BY 
+            CASE WHEN c.comment_id IS NULL THEN c.id END, 
+            c.comment_id, 
+            c.id`
 
 	rows, err := r.DB.Query(query, problemID)
 	if err != nil {
@@ -84,7 +87,15 @@ func (r *CommentRepositoryImpl) GetByProblemID(problemID int) ([]entities.Commen
 }
 
 func (r *CommentRepositoryImpl) Delete(id int) error {
-	query := `DELETE FROM comments WHERE id = $1`
+	query := `
+    WITH RECURSIVE comment_tree AS (
+        SELECT id FROM comments WHERE id = $1
+        UNION
+        SELECT c.id FROM comments c
+        INNER JOIN comment_tree ct ON c.comment_id = ct.id
+    )
+    DELETE FROM comments WHERE id IN (SELECT id FROM comment_tree)`
+
 	_, err := r.DB.Exec(query, id)
 	return err
 }

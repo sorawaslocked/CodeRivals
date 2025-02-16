@@ -181,10 +181,22 @@ func (app *Application) showProblem(w http.ResponseWriter, r *http.Request, ps h
 		app.ErrorLog.Print(err)
 	}
 
+	topLevelComments := make([]entities.Comment, 0)
+	replyMap := make(map[int][]entities.Comment)
+
+	for _, comment := range comments {
+		if comment.CommentID == nil {
+			topLevelComments = append(topLevelComments, comment)
+		} else {
+			replyMap[*comment.CommentID] = append(replyMap[*comment.CommentID], comment)
+		}
+	}
+
 	data := app.newTemplateData(r)
 	data.Form = problem
 	data.Examples = examples
-	data.Comments = comments
+	data.Comments = topLevelComments
+	data.ReplyMap = replyMap
 
 	app.render(w, r, "problem/problem.gohtml", data)
 }
@@ -431,19 +443,19 @@ func (app *Application) createComment(w http.ResponseWriter, r *http.Request, ps
 
 	// Check if this is a reply to another comment
 	parentCommentID := r.PostFormValue("parent_comment_id")
+	var parentID *int
 	if parentCommentID != "" {
 		// This is a reply
-		parentID, err := strconv.Atoi(parentCommentID)
+		id, err := strconv.Atoi(parentCommentID)
 		if err != nil {
 			app.ErrorLog.Print(err)
 			http.Error(w, "Invalid parent comment ID", http.StatusBadRequest)
 			return
 		}
-		err = app.CommentService.CreateReply(userId, problem.ID, parentID, text)
-	} else {
-		// This is a top-level comment
-		err = app.CommentService.CreateComment(userId, problem.ID, text)
+		parentID = &id
 	}
+
+	err = app.CommentService.CreateReply(userId, problem.ID, text, parentID)
 
 	if err != nil {
 		app.ErrorLog.Print(err)
@@ -477,6 +489,49 @@ func (app *Application) deleteComment(w http.ResponseWriter, r *http.Request, ps
 	if err != nil {
 		app.ErrorLog.Print(err)
 		http.Error(w, "Failed to delete comment", http.StatusInternalServerError)
+		return
+	}
+
+	// Redirect back to the previous page
+	http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+}
+
+func (app *Application) editComment(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userId := app.Session.GetInt(r.Context(), "authenticatedUserId")
+	if userId == 0 {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		app.ErrorLog.Print(err)
+		http.Error(w, "Invalid form data", http.StatusBadRequest)
+		return
+	}
+
+	commentId, err := strconv.Atoi(r.PostFormValue("comment_id"))
+	if err != nil {
+		app.ErrorLog.Print(err)
+		http.Error(w, "Invalid comment ID", http.StatusBadRequest)
+		return
+	}
+
+	text := r.PostFormValue("text")
+	if text == "" {
+		http.Error(w, "Comment text is required", http.StatusBadRequest)
+		return
+	}
+
+	err = app.CommentService.UpdateComment(commentId, text)
+	if err != nil {
+		app.ErrorLog.Print(err)
+		http.Error(w, "Failed to update comment", http.StatusInternalServerError)
 		return
 	}
 

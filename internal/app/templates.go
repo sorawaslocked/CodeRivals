@@ -25,6 +25,7 @@ type templateData struct {
 	Submissions           []*entities.FullProblemSubmission
 	SubmissionForSolution *entities.FullProblemSubmission
 	Comments              []entities.Comment
+	ReplyMap              map[int][]entities.Comment
 	ProblemTitle          string
 	ProblemUrl            string
 	Solution              *entities.ProblemSolution
