@@ -29,6 +29,7 @@ type templateData struct {
 	ProblemUrl            string
 	Solution              *entities.ProblemSolution
 	SolutionSubmittedBy   string
+	SolutionVoteStatus    *entities.ProblemSolutionVoteStatus
 	Solutions             []*entities.ProblemSolutionDisplay
 }
 

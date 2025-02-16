@@ -14,3 +14,8 @@ type ProblemSolutionDisplay struct {
 	Solution    *ProblemSolution `json:"solution"`
 	SubmittedBy string           `json:"submittedBy"`
 }
+
+type ProblemSolutionVoteStatus struct {
+	Upvoted   bool `json:"upvoted"`
+	Downvoted bool `json:"downvoted"`
+}

@@ -19,6 +19,8 @@ type ProblemRepository interface {
 	CreateProblemSolution(solution *entities.ProblemSolution) error
 	GetSolutionsForProblem(problemId int) ([]*entities.ProblemSolution, error)
 	GetSolutionById(id int) (*entities.ProblemSolution, error)
+	GetVoteCountBySolutionId(solutionId int) (int, error)
+	GetUpvoteBySolutionIdAndUserId(solutionId int, userId int) (bool, error)
 }
 
 type PGProblemRepository struct {
@@ -354,7 +356,7 @@ func (repo *PGProblemRepository) GetByURL(url string) (*entities.Problem, error)
 }
 
 func (repo *PGProblemRepository) CreateProblemSolution(solution *entities.ProblemSolution) error {
-	stmt := `INSERT INTO problem_solutions (problem_id, user_id, title, description, code, votes)
+	stmt := `INSERT INTO problem_solutions (problem_id, user_id, title, description, code)
 	VALUES ($1, $2, $3, $4, $5, 0)`
 
 	_, err := repo.db.Exec(stmt,
@@ -372,7 +374,7 @@ func (repo *PGProblemRepository) CreateProblemSolution(solution *entities.Proble
 }
 
 func (repo *PGProblemRepository) GetSolutionsForProblem(problemId int) ([]*entities.ProblemSolution, error) {
-	stmt := `SELECT id, user_id, title, description, code, votes FROM problem_solutions
+	stmt := `SELECT id, user_id, title, description, code FROM problem_solutions
 	WHERE problem_id = $1
 	ORDER BY votes DESC`
 
@@ -395,12 +397,20 @@ func (repo *PGProblemRepository) GetSolutionsForProblem(problemId int) ([]*entit
 			&sol.UserId,
 			&sol.Title,
 			&sol.Description,
-			&sol.Code,
-			&sol.Votes)
+			&sol.Code)
 
 		if err != nil {
 			return nil, err
 		}
+
+		var votes int
+		votes, err = repo.GetVoteCountBySolutionId(sol.ID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		sol.Votes = votes
 
 		solutions = append(solutions, sol)
 	}
@@ -413,7 +423,7 @@ func (repo *PGProblemRepository) GetSolutionsForProblem(problemId int) ([]*entit
 }
 
 func (repo *PGProblemRepository) GetSolutionById(id int) (*entities.ProblemSolution, error) {
-	stmt := `SELECT problem_id, user_id, title, description, code, votes FROM problem_solutions
+	stmt := `SELECT problem_id, user_id, title, description, code FROM problem_solutions
 	WHERE id = $1`
 
 	sol := &entities.ProblemSolution{}
@@ -424,12 +434,46 @@ func (repo *PGProblemRepository) GetSolutionById(id int) (*entities.ProblemSolut
 		&sol.UserId,
 		&sol.Title,
 		&sol.Description,
-		&sol.Code,
-		&sol.Votes)
+		&sol.Code)
 
 	if err != nil {
 		return nil, err
 	}
 
+	var votes int
+	votes, err = repo.GetVoteCountBySolutionId(sol.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	sol.Votes = votes
+
 	return sol, nil
+}
+
+func (repo *PGProblemRepository) GetVoteCountBySolutionId(solutionId int) (int, error) {
+	stmt := `SELECT COUNT(*) WHERE solution_id = $1`
+
+	var count int
+	err := repo.db.QueryRow(stmt, solutionId).Scan(&count)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (repo *PGProblemRepository) GetUpvoteBySolutionIdAndUserId(solutionId int, userId int) (bool, error) {
+	stmt := `SELECT upvote WHERE solution_id = $1 AND user_id = $2`
+
+	var upvote bool
+	err := repo.db.QueryRow(stmt, solutionId, userId).Scan(&upvote)
+
+	if err != nil {
+		return false, err
+	}
+
+	return upvote, nil
 }

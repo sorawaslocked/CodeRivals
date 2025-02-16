@@ -568,5 +568,19 @@ func (app *Application) solution(w http.ResponseWriter, r *http.Request) {
 	td.ProblemUrl = problem.Url
 	td.SolutionSubmittedBy = user.Username
 
+	voteStatus := &entities.ProblemSolutionVoteStatus{}
+
+	var upvote bool
+	upvote, err = app.ProblemService.GetUpvoteBySolutionIdAndUserId(solutionId, td.AuthenticatedUserId)
+
+	if err == nil && upvote {
+		voteStatus.Upvoted = true
+	}
+	if err == nil && !upvote {
+		voteStatus.Downvoted = true
+	}
+
+	td.SolutionVoteStatus = voteStatus
+
 	app.render(w, r, "problem/solution.gohtml", td)
 }

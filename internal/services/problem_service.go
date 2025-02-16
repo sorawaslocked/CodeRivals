@@ -157,3 +157,7 @@ func (s *ProblemService) GetSolutionsForProblem(problemId int) ([]*entities.Prob
 func (s *ProblemService) GetSolutionById(id int) (*entities.ProblemSolution, error) {
 	return s.problemRepo.GetSolutionById(id)
 }
+
+func (s *ProblemService) GetUpvoteBySolutionIdAndUserId(solutionId int, userId int) (bool, error) {
+	return s.problemRepo.GetUpvoteBySolutionIdAndUserId(solutionId, userId)
+}
