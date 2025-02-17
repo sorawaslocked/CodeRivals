@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/sorawaslocked/CodeRivals/internal/entities"
 	"github.com/sorawaslocked/CodeRivals/internal/repositories"
+	"strings"
 )
 
 type SubmissionService struct {
@@ -107,8 +108,16 @@ func (s *SubmissionService) ProcessSubmission(problem *entities.Problem, testCas
 	submission.Memory = uint32(result.MemoryKB)
 
 	if result.Error != "" {
-		submission.Status = "time_limit"
-		submission.Error = result.Error
+		if strings.Contains(result.Error, "runtime error") {
+			submission.Status = "runtime_error"
+			submission.Error = result.Error
+		} else if strings.Contains(result.Error, "time limit") {
+			submission.Status = "time_limit"
+			submission.Error = result.Error
+		} else {
+			submission.Status = "compilation_error"
+			submission.Error = result.Error
+		}
 	} else if result.Success {
 		submission.Status = "accepted"
 
