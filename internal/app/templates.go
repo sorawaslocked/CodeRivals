@@ -35,6 +35,10 @@ type templateData struct {
 	Signature             string
 	SolutionComments      []entities.ProblemSolutionComment
 	SolutionReplyMap      map[int][]entities.ProblemSolutionComment
+	DataStructures        []entities.LearningResource
+	Algorithms            []entities.LearningResource
+	Books                 []entities.LearningResource
+	OnlineResources       []entities.LearningResource
 }
 
 func (app *Application) newTemplateData(r *http.Request) *templateData {

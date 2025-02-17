@@ -875,3 +875,14 @@ func (app *Application) deleteSolutionComment(w http.ResponseWriter, r *http.Req
 	// Redirect back to the previous page
 	http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
 }
+
+func (app *Application) learningMaterials(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+
+	learningMaterials := entities.GetLearningMaterials()
+	data.DataStructures = learningMaterials.DataStructures
+	data.Algorithms = learningMaterials.Algorithms
+	data.Books = learningMaterials.Books
+	data.OnlineResources = learningMaterials.OnlineResources
+	app.render(w, r, "learning_materials/learning_materials.gohtml", data)
+}

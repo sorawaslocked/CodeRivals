@@ -62,6 +62,7 @@ func (app *Application) Routes() http.Handler {
 	})))
 	router.Handler("POST", "/solutions/:id/comments/edit", dynamic.ThenFunc(app.editSolutionComment))
 	router.Handler("POST", "/solutions/:id/comments/delete", dynamic.ThenFunc(app.deleteSolutionComment))
+	router.Handler("GET", "/learning-materials", dynamic.ThenFunc(app.learningMaterials))
 
 	standard := alice.New(app.logRequest)
 
