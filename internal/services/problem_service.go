@@ -2,9 +2,11 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"github.com/sorawaslocked/CodeRivals/internal/dtos"
 	"github.com/sorawaslocked/CodeRivals/internal/entities"
 	"github.com/sorawaslocked/CodeRivals/internal/repositories"
+	"strings"
 )
 
 type ProblemService struct {
@@ -184,4 +186,18 @@ func (s *ProblemService) DownvoteSolution(solutionId int, userId int) error {
 
 func (s *ProblemService) UnvoteSolution(solutionId int, userId int) error {
 	return s.problemRepo.RemoveSolutionVote(solutionId, userId)
+}
+
+func (s *ProblemService) GenerateSignature(problem *entities.Problem) string {
+	params := make([]string, len(problem.InputTypes))
+	for i, inputType := range problem.InputTypes {
+		params[i] = fmt.Sprintf("param%d %s", i+1, inputType)
+	}
+
+	signature := fmt.Sprintf("func %s(%s) (%s) {\n    // Write your solution here\n    \n}",
+		problem.MethodName,
+		strings.Join(params, ", "),
+		problem.OutputType)
+
+	return signature
 }

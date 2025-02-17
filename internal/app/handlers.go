@@ -171,6 +171,8 @@ func (app *Application) showProblem(w http.ResponseWriter, r *http.Request, ps h
 		return
 	}
 
+	signature := app.ProblemService.GenerateSignature(problem)
+
 	examples, err := app.ProblemService.GetProblemExamples(problem.ID)
 	if err != nil {
 		app.ErrorLog.Print(err)
@@ -197,6 +199,7 @@ func (app *Application) showProblem(w http.ResponseWriter, r *http.Request, ps h
 	data.Examples = examples
 	data.Comments = topLevelComments
 	data.ReplyMap = replyMap
+	data.Signature = signature
 
 	app.render(w, r, "problem/problem.gohtml", data)
 }
