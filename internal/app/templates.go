@@ -33,6 +33,8 @@ type templateData struct {
 	SolutionVoteStatus    *entities.ProblemSolutionVoteStatus
 	Solutions             []*entities.ProblemSolutionDisplay
 	Signature             string
+	SolutionComments      []entities.ProblemSolutionComment
+	SolutionReplyMap      map[int][]entities.ProblemSolutionComment
 }
 
 func (app *Application) newTemplateData(r *http.Request) *templateData {

@@ -8,15 +8,16 @@ import (
 )
 
 type Application struct {
-	ErrorLog             *log.Logger
-	InfoLog              *log.Logger
-	ProblemService       *services.ProblemService
-	AuthService          *services.AuthService
-	SubmissionService    *services.SubmissionService
-	CodeExecutionService *services.CodeExecutionService
-	TopicService         *services.TopicService
-	LeaderBoardService   *services.LeaderboardService
-	Session              *scs.SessionManager
-	templateCache        map[string]*template.Template
-	CommentService       *services.CommentService
+	ErrorLog                      *log.Logger
+	InfoLog                       *log.Logger
+	ProblemService                *services.ProblemService
+	AuthService                   *services.AuthService
+	SubmissionService             *services.SubmissionService
+	CodeExecutionService          *services.CodeExecutionService
+	TopicService                  *services.TopicService
+	LeaderBoardService            *services.LeaderboardService
+	Session                       *scs.SessionManager
+	templateCache                 map[string]*template.Template
+	CommentService                *services.CommentService
+	ProblemSolutionCommentService *services.SolutionCommentService
 }
