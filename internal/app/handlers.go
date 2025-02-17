@@ -13,6 +13,19 @@ import (
 	"time"
 )
 
+func (app *Application) logout(w http.ResponseWriter, r *http.Request) {
+	err := app.Session.RenewToken(r.Context())
+
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+	}
+
+	app.Session.Remove(r.Context(), "authenticatedUserId")
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
 func (app *Application) login(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	data.Form = dtos.UserLoginForm{}

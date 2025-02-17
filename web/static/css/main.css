@@ -53,7 +53,7 @@ body {
     gap: 1.5rem;
 }
 
-.nav-menu a, #profile-link::after {
+.nav-menu a, .nav-user a {
     color: var(--text-color);
     text-decoration: none;
 }
@@ -66,6 +66,19 @@ body {
     display: flex;
     align-items: center;
     gap: 1rem;
+}
+
+#logout-btn {
+    background-color: unset;
+    border: unset;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+#logout-btn:hover {
+    cursor: pointer;
 }
 
 /* Button styles */

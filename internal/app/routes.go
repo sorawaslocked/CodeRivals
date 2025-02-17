@@ -19,6 +19,7 @@ func (app *Application) Routes() http.Handler {
 	router.PanicHandler = app.panicHandler
 
 	router.Handler("GET", "/", dynamic.ThenFunc(app.home))
+	router.Handler("POST", "/logout", dynamic.ThenFunc(app.logout))
 	router.Handler("GET", "/login", dynamic.ThenFunc(app.login))
 	router.Handler("POST", "/login", dynamic.ThenFunc(app.loginPost))
 	router.Handler("GET", "/register", dynamic.ThenFunc(app.register))

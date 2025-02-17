@@ -27,7 +27,10 @@
         </div>
         {{if ne .AuthenticatedUserId 0}}
         <div class="nav-user">
-            <a id=profile-link href="/profile">Profile</a>
+            <a href="/profile">Profile</a>
+            <form action="/logout" method="post">
+                <input id="logout-btn" type="submit" value="Logout">
+            </form>
         </div>
         {{else}}
         <div class="nav-auth">
