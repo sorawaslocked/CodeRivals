@@ -18,6 +18,7 @@ type templateData struct {
 	AuthenticatedUserId   int
 	Problems              []*entities.Problem
 	Topics                []*entities.Topic
+	TopicsWithCount       []*entities.TopicWithCount
 	Pagination            Pagination
 	Examples              []entities.ProblemExample
 	UserErrorMessage      string
@@ -39,6 +40,8 @@ type templateData struct {
 	Algorithms            []entities.LearningResource
 	Books                 []entities.LearningResource
 	OnlineResources       []entities.LearningResource
+	IsAdmin               bool
+	AdminUsers            []*entities.AdminUser
 }
 
 func (app *Application) newTemplateData(r *http.Request) *templateData {
