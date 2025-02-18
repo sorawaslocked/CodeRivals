@@ -8,6 +8,7 @@ import (
 type CommentRepository interface {
 	Create(comment *entities.Comment) error
 	GetByProblemID(problemID int) ([]entities.Comment, error)
+	GetByUser(userID int) ([]*entities.ProblemSolutionComment, error)
 	Delete(id int) error
 	Update(comment *entities.Comment) error
 }
@@ -108,4 +109,36 @@ func (r *CommentRepositoryImpl) Update(comment *entities.Comment) error {
 
 	_, err := r.DB.Exec(query, comment.TextValue, comment.ID)
 	return err
+}
+
+func (r *CommentRepositoryImpl) GetByUser(userID int) ([]*entities.ProblemSolutionComment, error) {
+	query := `
+        SELECT id, solution_id, comment_id, text_value, created_at
+        FROM problem_solution_comments
+        WHERE user_id = $1
+        ORDER BY created_at DESC`
+
+	rows, err := r.DB.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var comments []*entities.ProblemSolutionComment
+	for rows.Next() {
+		comment := &entities.ProblemSolutionComment{UserID: userID}
+		err := rows.Scan(
+			&comment.ID,
+			&comment.SolutionID,
+			&comment.CommentID,
+			&comment.TextValue,
+			&comment.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		comments = append(comments, comment)
+	}
+
+	return comments, rows.Err()
 }
