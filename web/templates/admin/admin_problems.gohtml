@@ -1,0 +1,332 @@
+{{define "title"}}Admin - Problem Management{{end}}
+{{define "styles"}}
+    <link rel="stylesheet" href="/static/css/admin/admin.css">
+    <link rel="stylesheet" href="/static/css/admin/admin_problems.css">
+{{end}}
+{{define "content"}}
+    <div class="admin-container">
+        <div class="admin-sidebar">
+            <h2>Admin Menu</h2>
+            <nav class="admin-nav">
+                <a href="/admin" class="admin-nav-item">Dashboard</a>
+                <a href="/admin/problems" class="admin-nav-item active">Problems</a>
+                <a href="/admin/users" class="admin-nav-item">Users</a>
+                <a href="/admin/topics" class="admin-nav-item">Topics</a>
+{{/*                <a href="/admin/moderation" class="admin-nav-item">Moderation</a>*/}}
+            </nav>
+        </div>
+        <div class="admin-content">
+            <div class="admin-header">
+                <h1>Problem Management</h1>
+                <button class="btn-primary" onclick="showCreateProblemForm()">Create New Problem</button>
+            </div>
+
+            <div class="problems-list">
+                <table class="admin-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Difficulty</th>
+                        <th>Topics</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{range .Problems}}
+                        <tr>
+                            <td>{{.ID}}</td>
+                            <td>{{.Title}}</td>
+                            <td>
+                            <span class="difficulty-badge {{toLowerCase .Difficulty}}">
+                                {{.Difficulty}}
+                            </span>
+                            </td>
+                            <td>
+                                {{range .Topics}}
+                                    <span class="topic-badge">{{.Name}}</span>
+                                {{end}}
+                            </td>
+                            <td class="actions">
+                                <button onclick="editProblem({{.ID}})" class="btn-secondary">Edit</button>
+                                <button onclick="deleteProblem({{.ID}})" class="btn-danger">Delete</button>
+                                <button onclick="manageTestCases({{.ID}})" class="btn-secondary">Test Cases</button>
+                            </td>
+                        </tr>
+                    {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Problem Modal -->
+    <div id="problemModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2 id="modalTitle">Create New Problem</h2>
+            <form id="problemForm" method="POST">
+                <input type="hidden" id="problemId" name="id">
+
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="difficulty">Difficulty</label>
+                    <select id="difficulty" name="difficulty" required>
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Topics</label>
+                    <div class="topics-grid">
+                        {{range .Topics}}
+                            <label class="topic-checkbox">
+                                <input type="checkbox" name="topics" value="{{.ID}}">
+                                {{.Name}}
+                            </label>
+                        {{end}}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="methodName">Method Name</label>
+                    <input type="text" id="methodName" name="methodName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="outputType">Output Type</label>
+                    <input type="text" id="outputType" name="outputType" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputTypes">Input Types (comma-separated)</label>
+                    <input type="text" id="inputTypes" name="inputTypes" required>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Problem</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Test Cases Modal -->
+    <div id="testCasesModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Manage Test Cases</h2>
+            <form id="testCasesForm" method="POST">
+                <input type="hidden" id="testCasesProblemId" name="problemId">
+                <div id="testCasesList"></div>
+                <button type="button" onclick="addTestCase()" class="btn-secondary">Add Test Case</button>
+                <div class="modal-actions">
+                    <button type="button" onclick="closeTestCasesModal()" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Test Cases</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{{end}}
+{{define "scripts"}}
+    <script>
+        function showCreateProblemForm() {
+            document.getElementById('modalTitle').textContent = 'Create New Problem';
+            document.getElementById('problemId').value = '';
+            document.getElementById('problemForm').reset();
+            document.getElementById('problemForm').action = '/admin/problems';
+            document.getElementById('problemModal').style.display = 'block';
+        }
+
+        function editProblem(id) {
+            fetch(`/admin/problems/${id}`)
+                .then(response => response.json())
+                .then(problem => {
+                    document.getElementById('modalTitle').textContent = 'Edit Problem';
+                    document.getElementById('problemId').value = problem.id;
+                    document.getElementById('title').value = problem.title;
+                    document.getElementById('description').value = problem.description;
+                    document.getElementById('difficulty').value = problem.difficulty;
+                    document.getElementById('methodName').value = problem.method_name;
+                    document.getElementById('outputType').value = problem.output_type;
+                    document.getElementById('inputTypes').value = problem.input_types.join(',');
+
+                    // Set the form action for editing
+                    document.getElementById('problemForm').action = `/admin/problems/${problem.id}`;
+
+                    // Reset all checkboxes first
+                    const topicCheckboxes = document.getElementsByName('topics');
+                    topicCheckboxes.forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+
+                    // Check topics if they exist
+                    if (problem.topics && Array.isArray(problem.topics)) {
+                        topicCheckboxes.forEach(checkbox => {
+                            checkbox.checked = problem.topics.some(topic => topic.id === parseInt(checkbox.value));
+                        });
+                    }
+
+                    document.getElementById('problemModal').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching problem:', error);
+                    alert('Error loading problem details');
+                });
+        }
+
+        function closeModal() {
+            document.getElementById('problemModal').style.display = 'none';
+        }
+
+        function deleteProblem(id) {
+            if (confirm('Are you sure you want to delete this problem?')) {
+                fetch(`/admin/problems/${id}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.reload();
+                        }
+                    });
+            }
+        }
+
+        function manageTestCases(id) {
+            document.getElementById('testCasesProblemId').value = id;
+            document.getElementById('testCasesList').innerHTML = ''; // Clear existing test cases
+
+            fetch(`/admin/problems/${id}/testcases`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch test cases');
+                    }
+                    return response.json();
+                })
+                .then(testCases => {
+                    if (Array.isArray(testCases)) {
+                        testCases.forEach(testCase => {
+                            addTestCase(testCase);
+                        });
+                    }
+                    document.getElementById('testCasesModal').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error loading test cases:', error);
+                    alert('Error loading test cases');
+                });
+        }
+
+        // Update the test cases submission
+        document.getElementById('testCasesForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const problemId = document.getElementById('testCasesProblemId').value;
+
+            // Get all inputs and outputs
+            const inputs = Array.from(document.querySelectorAll('textarea[name="inputs[]"]')).map(input => input.value);
+            const outputs = Array.from(document.querySelectorAll('textarea[name="outputs[]"]')).map(output => output.value);
+
+            // Create the FormData object
+            const formData = new FormData();
+            inputs.forEach((input, index) => {
+                formData.append('inputs[]', input);
+            });
+            outputs.forEach((output, index) => {
+                formData.append('outputs[]', output);
+            });
+
+            // Log the data being sent
+            console.log('Sending test cases:', {
+                problemId,
+                inputs,
+                outputs
+            });
+
+            fetch(`/admin/problems/${problemId}/testcases`, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to save test cases');
+                    }
+                    document.getElementById('testCasesModal').style.display = 'none';
+                    alert('Test cases saved successfully');
+                    // Optionally refresh the page or update UI
+                })
+                .catch(error => {
+                    console.error('Error saving test cases:', error);
+                    alert('Error saving test cases: ' + error.message);
+                });
+        });
+
+        // Helper function to format JSON in text areas
+        function formatJsonInput(textarea) {
+            try {
+                const value = textarea.value;
+                if (value) {
+                    const jsonObj = JSON.parse(value);
+                    textarea.value = JSON.stringify(jsonObj, null, 2);
+                }
+            } catch (e) {
+                // If not valid JSON, leave as is
+            }
+        }
+
+        // Update the addTestCase function to handle JSON formatting
+        function addTestCase(testCase = null) {
+            const container = document.getElementById('testCasesList');
+            const index = container.children.length;
+
+            const testCaseDiv = document.createElement('div');
+            testCaseDiv.className = 'test-case';
+            testCaseDiv.innerHTML = `
+        <h3>Test Case ${index + 1}</h3>
+        <div class="form-group">
+            <label>Input (JSON)</label>
+            <textarea name="inputs[]" required onblur="formatJsonInput(this)">${testCase ? testCase.input : ''}</textarea>
+        </div>
+        <div class="form-group">
+            <label>Expected Output (JSON)</label>
+            <textarea name="outputs[]" required onblur="formatJsonInput(this)">${testCase ? testCase.output : ''}</textarea>
+        </div>
+        <button type="button" onclick="removeTestCase(this)" class="btn-danger">Remove</button>
+    `;
+
+            container.appendChild(testCaseDiv);
+
+            // Format JSON if exists
+            if (testCase) {
+                const textareas = testCaseDiv.querySelectorAll('textarea');
+                textareas.forEach(formatJsonInput);
+            }
+        }
+
+        function removeTestCase(button) {
+            button.parentElement.remove();
+            // Renumber remaining test cases
+            const testCases = document.getElementsByClassName('test-case');
+            Array.from(testCases).forEach((testCase, index) => {
+                testCase.querySelector('h3').textContent = `Test Case ${index + 1}`;
+            });
+        }
+
+        function closeTestCasesModal() {
+            document.getElementById('testCasesModal').style.display = 'none';
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target.className === 'modal') {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+{{end}}

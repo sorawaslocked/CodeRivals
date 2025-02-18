@@ -31,6 +31,12 @@
                 <a href="/submissions" class="profile-link">
                     View My Submissions →
                 </a>
+                {{if .IsAdmin}}
+                    <br>
+                    <a href="/admin" class="profile-link">
+                        Admin Dashboard →
+                    </a>
+                {{end}}
             </div>
         </div>
     </div>

@@ -1,0 +1,39 @@
+{{define "title"}}Admin Dashboard{{end}}
+
+{{define "styles"}}
+    <link rel="stylesheet" href="/static/css/admin/admin.css">
+{{end}}
+
+{{define "content"}}
+    <div class="admin-container">
+        <div class="admin-sidebar">
+            <h2>Admin Menu</h2>
+            <nav class="admin-nav">
+                <a href="/admin" class="admin-nav-item active">Dashboard</a>
+                <a href="/admin/problems" class="admin-nav-item">Problems</a>
+                <a href="/admin/users" class="admin-nav-item">Users</a>
+                <a href="/admin/topics" class="admin-nav-item">Topics</a>
+{{/*                <a href="/admin/moderation" class="admin-nav-item">Moderation</a>*/}}
+            </nav>
+        </div>
+
+        <div class="admin-content">
+            <h1>Admin Dashboard</h1>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Users</h3>
+                    <p class="stat-number">{{len .Users}}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Problems</h3>
+                    <p class="stat-number">{{len .Problems}}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Topics</h3>
+                    <p class="stat-number">{{len .Topics}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{{end}}

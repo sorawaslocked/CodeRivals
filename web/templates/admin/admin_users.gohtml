@@ -1,0 +1,230 @@
+{{define "title"}}Admin - User Management{{end}}
+
+{{define "styles"}}
+    <link rel="stylesheet" href="/static/css/admin/admin.css">
+    <link rel="stylesheet" href="/static/css/admin/admin_users.css">
+{{end}}
+
+{{define "content"}}
+    <div class="admin-container">
+        <div class="admin-sidebar">
+            <h2>Admin Menu</h2>
+            <nav class="admin-nav">
+                <a href="/admin" class="admin-nav-item">Dashboard</a>
+                <a href="/admin/problems" class="admin-nav-item">Problems</a>
+                <a href="/admin/users" class="admin-nav-item active">Users</a>
+                <a href="/admin/topics" class="admin-nav-item">Topics</a>
+{{/*                <a href="/admin/moderation" class="admin-nav-item">Moderation</a>*/}}
+            </nav>
+        </div>
+
+        <div class="admin-content">
+            <div class="admin-header">
+                <h1>User Management</h1>
+            </div>
+
+            <div class="users-list">
+                <table class="admin-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Points</th>
+                        <th>Role</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{range .AdminUsers}}
+                        <tr>
+                            <td>{{.User.ID}}</td>
+                            <td>{{.User.Username}}</td>
+                            <td>{{.User.Email}}</td>
+                            <td>{{.User.Points}}</td>
+                            <td>
+                                <select class="role-select" data-user-id="{{.User.ID}}" onchange="updateUserRole(this)">
+                                    <option value="regular" {{if not .IsAdmin}}selected{{end}}>Regular</option>
+                                    <option value="admin" {{if .IsAdmin}}selected{{end}}>Admin</option>
+                                </select>
+                            </td>
+                            <td>{{.User.CreatedAt.Format "2006-01-02 15:04:05"}}</td>
+                            <td class="actions">  {{/* For future \/ */}}
+{{/*                                <button onclick="viewUserDetails({{.User.ID}})" class="btn-secondary">Details</button>*/}}
+                                <button onclick="resetPassword({{.User.ID}})" class="btn-secondary">Reset Password</button>
+                            </td>
+                        </tr>
+                    {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Details Modal -->
+    <div id="userDetailsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>User Details</h2>
+            <div id="userDetailsContent">
+                <div class="details-section">
+                    <h3>Submissions</h3>
+                    <div id="userSubmissions"></div>
+                </div>
+                <div class="details-section">
+                    <h3>Solutions</h3>
+                    <div id="userSolutions"></div>
+                </div>
+                <div class="details-section">
+                    <h3>Comments</h3>
+                    <div id="userComments"></div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button onclick="closeModal('userDetailsModal')" class="btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+{{end}}
+
+{{define "scripts"}}
+    <script>
+        function viewUserDetails(userId) {
+            console.log('Fetching details for user:', userId); // Debug log
+            fetch(`/admin/users/${userId}/details`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Received data:', data); // Debug log
+                    document.getElementById('userSubmissions').innerHTML = formatSubmissions(data.submissions);
+                    document.getElementById('userSolutions').innerHTML = formatSolutions(data.solutions);
+                    document.getElementById('userComments').innerHTML = formatComments(data.comments);
+                    document.getElementById('userDetailsModal').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching user details:', error);
+                    alert('Failed to load user details');
+                });
+        }
+
+        function formatSubmissions(submissions) {
+            if (!submissions || submissions.length === 0) return '<p>No submissions</p>';
+            return `<table class="details-table">
+                <thead>
+                    <tr>
+                        <th>Problem</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${submissions.map(s => `
+                        <tr>
+                            <td>${s.problem.title}</td>
+                            <td>${s.submission.status}</td>
+                            <td>${new Date(s.submission.submitted_at).toLocaleString()}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>`;
+        }
+
+        function formatSolutions(solutions) {
+            if (!solutions || solutions.length === 0) return '<p>No solutions</p>';
+            return `<table class="details-table">
+                <thead>
+                    <tr>
+                        <th>Problem</th>
+                        <th>Title</th>
+                        <th>Votes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${solutions.map(s => `
+                        <tr>
+                            <td>${s.problem_title}</td>
+                            <td>${s.solution.title}</td>
+                            <td>${s.solution.votes}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>`;
+        }
+
+        function formatComments(comments) {
+            if (!comments || comments.length === 0) return '<p>No comments</p>';
+            return `<table class="details-table">
+                <thead>
+                    <tr>
+                        <th>Text</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${comments.map(c => `
+                        <tr>
+                            <td>${c.text_value}</td>
+                            <td>${new Date(c.created_at).toLocaleString()}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>`;
+        }
+
+        function updateUserRole(select) {
+            const userId = select.dataset.userId;
+            const role = select.value;
+
+            fetch(`/admin/users/${userId}/role`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ role: role })
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to update role');
+                    alert('Role updated successfully');
+                })
+                .catch(error => {
+                    console.error('Error updating role:', error);
+                    alert('Failed to update role');
+                    select.value = select.value === 'admin' ? 'regular' : 'admin';
+                });
+        }
+
+        function resetPassword(userId) {
+            if (!confirm('Are you sure you want to reset this user\'s password?')) return;
+
+            fetch(`/admin/users/${userId}/reset-password`, {
+                method: 'POST'
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to reset password');
+                    return response.json();
+                })
+                .then(data => {
+                    alert(`Password has been reset to: ${data.password}`);
+                })
+                .catch(error => {
+                    console.error('Error resetting password:', error);
+                    alert('Failed to reset password');
+                });
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+{{end}}
