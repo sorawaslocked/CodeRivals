@@ -85,6 +85,10 @@ func (s *ProblemService) CreateProblem(req *dtos.ProblemCreateRequest) error {
 		Description: req.Description,
 		Difficulty:  req.Difficulty,
 		Topics:      req.Topics,
+		InputTypes:  req.InputTypes,
+		OutputType:  req.OutputType,
+		MethodName:  req.MethodName,
+		Url:         req.Url,
 	}
 
 	return s.problemRepo.Create(problem)
