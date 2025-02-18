@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"errors"
 	"github.com/sorawaslocked/CodeRivals/internal/entities"
 )
 
@@ -11,8 +12,9 @@ type TopicRepository interface {
 	GetAll() ([]*entities.Topic, error)
 	GetAllForProblem(problemId int) ([]*entities.Topic, error)
 	Create(name string) error
-	Update(newName string) error
+	Update(newName *entities.Topic) error
 	Delete(id int) error
+	GetProblemCount(topicId int) (int, error)
 }
 
 type PGTopicRepository struct {
@@ -124,13 +126,20 @@ func (repo *PGTopicRepository) GetAllForProblem(problemId int) ([]*entities.Topi
 	return topics, nil
 }
 
-func (repo *PGTopicRepository) Update(newName string) error {
+func (repo *PGTopicRepository) Update(topic *entities.Topic) error {
 	stmt := "UPDATE topics SET name = $1 WHERE id = $2"
-
-	_, err := repo.db.Exec(stmt, newName)
-
+	result, err := repo.db.Exec(stmt, topic.Name, topic.ID)
 	if err != nil {
 		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return errors.New("topic not found")
 	}
 
 	return nil
@@ -146,4 +155,16 @@ func (repo *PGTopicRepository) Delete(id int) error {
 	}
 
 	return nil
+}
+
+func (repo *PGTopicRepository) GetProblemCount(topicId int) (int, error) {
+	var count int
+	stmt := `SELECT COUNT(*) FROM problem_topics WHERE topic_id = $1`
+
+	err := repo.db.QueryRow(stmt, topicId).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
