@@ -233,6 +233,15 @@ func (app *Application) profile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if user is admin
+	isAdmin, err := app.AdminService.IsUserAdmin(td.AuthenticatedUserId)
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+		return
+	}
+	td.IsAdmin = isAdmin
+
 	// Update template to use Form for passing data, following existing pattern
 	td.Form = struct {
 		Username  string
@@ -742,6 +751,47 @@ func (app *Application) handleSolutionVote(w http.ResponseWriter, r *http.Reques
 		app.ErrorLog.Print(err)
 		app.serverError(w, r)
 	}
+}
+
+func (app *Application) adminDashboard(w http.ResponseWriter, r *http.Request) {
+	td := app.newTemplateData(r)
+
+	if td.AuthenticatedUserId == 0 {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	isAdmin, err := app.AdminService.IsUserAdmin(td.AuthenticatedUserId)
+	if err != nil || !isAdmin {
+		app.notFound(w, r)
+		return
+	}
+
+	users, err := app.LeaderBoardService.GetLeaderboard()
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+		return
+	}
+	td.Users = users
+
+	problems, err := app.ProblemService.GetAllProblems()
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+		return
+	}
+	td.Problems = problems
+
+	topics, err := app.TopicService.GetAllTopics()
+	if err != nil {
+		app.ErrorLog.Print(err)
+		app.serverError(w, r)
+		return
+	}
+	td.Topics = topics
+
+	app.render(w, r, "admin/dashboard.gohtml", td)
 }
 
 func (app *Application) createSolutionComment(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
