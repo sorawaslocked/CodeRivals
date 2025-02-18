@@ -64,6 +64,27 @@ func (app *Application) Routes() http.Handler {
 	router.Handler("POST", "/solutions/:id/comments/delete", dynamic.ThenFunc(app.deleteSolutionComment))
 	router.Handler("GET", "/learning-materials", dynamic.ThenFunc(app.learningMaterials))
 
+	// Admin routes
+	router.Handler("GET", "/admin", dynamic.ThenFunc(app.adminDashboard))
+
+	router.Handler("GET", "/admin/problems", dynamic.ThenFunc(app.adminProblems))
+	router.Handler("GET", "/admin/problems/:id", dynamic.ThenFunc(app.adminGetProblem))
+	router.Handler("POST", "/admin/problems", dynamic.ThenFunc(app.adminCreateProblem))
+	router.Handler("POST", "/admin/problems/:id", dynamic.ThenFunc(app.adminUpdateProblem))
+	router.Handler("DELETE", "/admin/problems/:id", dynamic.ThenFunc(app.adminDeleteProblem))
+	router.Handler("GET", "/admin/problems/:id/testcases", dynamic.ThenFunc(app.adminGetTestCases))
+	router.Handler("POST", "/admin/problems/:id/testcases", dynamic.ThenFunc(app.adminUpdateTestCases))
+
+	router.Handler("GET", "/admin/users", dynamic.ThenFunc(app.adminUsers))
+	//router.Handler("GET", "/admin/users/:id/details", dynamic.ThenFunc(app.adminGetUserDetails))
+	router.Handler("POST", "/admin/users/:id/role", dynamic.ThenFunc(app.adminUpdateUserRole))
+	router.Handler("POST", "/admin/users/:id/reset-password", dynamic.ThenFunc(app.adminResetUserPassword))
+
+	router.Handler("GET", "/admin/topics", dynamic.ThenFunc(app.adminTopics))
+	router.Handler("POST", "/admin/topics", dynamic.ThenFunc(app.adminTopicsCreate))
+	router.Handler("POST", "/admin/topics/:id", dynamic.ThenFunc(app.adminTopicsUpdate))
+	router.Handler("POST", "/admin/topics/:id/delete", dynamic.ThenFunc(app.adminTopicsDelete))
+
 	standard := alice.New(app.logRequest)
 
 	return standard.Then(router)
