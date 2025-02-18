@@ -22,6 +22,7 @@ type UserRepository interface {
 	// User engagement
 	//GetComments(userID uint64) ([]*entities.Comment, error)
 	AddPoints(userID int, points int) error
+	UpdatePassword(userID int, hashedPassword []byte) error
 }
 
 type PGUserRepository struct {
@@ -250,5 +251,15 @@ func (repo *PGUserRepository) AddPoints(userID int, points int) error {
 		WHERE id = $2`
 
 	_, err := repo.db.Exec(query, points, userID)
+	return err
+}
+
+func (repo *PGUserRepository) UpdatePassword(userID int, hashedPassword []byte) error {
+	query := `
+        UPDATE users
+        SET hashed_password = $1, updated_at = NOW()
+        WHERE id = $2`
+
+	_, err := repo.db.Exec(query, hashedPassword, userID)
 	return err
 }
