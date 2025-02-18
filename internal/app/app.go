@@ -20,4 +20,5 @@ type Application struct {
 	templateCache                 map[string]*template.Template
 	CommentService                *services.CommentService
 	ProblemSolutionCommentService *services.SolutionCommentService
+	AdminService                  *services.AdminService
 }
