@@ -205,3 +205,21 @@ func (s *ProblemService) GenerateSignature(problem *entities.Problem) string {
 
 	return signature
 }
+
+func (s *ProblemService) GetTestCases(problemId int) ([]*entities.ProblemTestCase, error) {
+	return s.problemRepo.GetTestCases(problemId)
+}
+
+func (s *ProblemService) UpdateTestCases(problemId int, testCases []*entities.ProblemTestCase) error {
+	// First delete existing test cases
+	if err := s.problemRepo.DeleteTestCases(problemId); err != nil {
+		return fmt.Errorf("failed to delete existing test cases: %w", err)
+	}
+
+	// Then insert new ones
+	if err := s.problemRepo.CreateTestCases(testCases); err != nil {
+		return fmt.Errorf("failed to create new test cases: %w", err)
+	}
+
+	return nil
+}

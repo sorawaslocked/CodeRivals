@@ -19,10 +19,13 @@ type ProblemRepository interface {
 	CreateProblemSolution(solution *entities.ProblemSolution) error
 	GetSolutionsForProblem(problemId int) ([]*entities.ProblemSolution, error)
 	GetSolutionById(id int) (*entities.ProblemSolution, error)
+	GetSolutionsByUser(userId int) ([]*entities.ProblemSolution, error)
 	GetVotesBySolutionId(solutionId int) (int, error)
 	GetUpvoteBySolutionIdAndUserId(solutionId int, userId int) (bool, error)
 	UpsertSolutionVote(solutionId int, userId int, upvote bool) error
 	RemoveSolutionVote(solutionId int, userId int) error
+	DeleteTestCases(problemId int) error
+	CreateTestCases(testCases []*entities.ProblemTestCase) error
 }
 
 type PGProblemRepository struct {
@@ -59,7 +62,7 @@ func (repo *PGProblemRepository) Create(prob *entities.Problem) error {
 
 	problemStmt := `INSERT INTO problems
     (title, description, difficulty, url, input_types, output_type, method_name, created_at, updated_at)
-	VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW()) RETURNING id`
+    VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW()) RETURNING id`
 	var problemId int
 
 	err = tx.QueryRow(
@@ -68,7 +71,7 @@ func (repo *PGProblemRepository) Create(prob *entities.Problem) error {
 		prob.Description,
 		prob.Difficulty,
 		prob.Url,
-		prob.InputTypes,
+		pq.StringArray(prob.InputTypes),
 		prob.OutputType,
 		prob.MethodName,
 	).Scan(&problemId)
@@ -79,7 +82,7 @@ func (repo *PGProblemRepository) Create(prob *entities.Problem) error {
 
 	for _, topic := range prob.Topics {
 		topicStmt := `INSERT INTO problem_topics (problem_id, topic_id)
-		VALUES ($1, $2)`
+        VALUES ($1, $2)`
 
 		_, err = tx.Exec(topicStmt, problemId, topic.ID)
 
@@ -193,7 +196,7 @@ func (repo *PGProblemRepository) Update(prob *entities.Problem) error {
 		prob.Description,
 		prob.Difficulty,
 		prob.Url,
-		prob.InputTypes,
+		pq.StringArray(prob.InputTypes),
 		prob.OutputType,
 		prob.MethodName,
 		prob.ID,
@@ -533,5 +536,61 @@ func (repo *PGProblemRepository) RemoveSolutionVote(solutionId int, userId int) 
 		return err
 	}
 
+	return nil
+}
+
+func (repo *PGProblemRepository) GetSolutionsByUser(userId int) ([]*entities.ProblemSolution, error) {
+	stmt := `SELECT id, problem_id, title, description, code 
+            FROM problem_solutions 
+            WHERE user_id = $1`
+
+	rows, err := repo.db.Query(stmt, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var solutions []*entities.ProblemSolution
+	for rows.Next() {
+		solution := &entities.ProblemSolution{UserId: userId}
+		err := rows.Scan(
+			&solution.ID,
+			&solution.ProblemId,
+			&solution.Title,
+			&solution.Description,
+			&solution.Code,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		votes, err := repo.GetVotesBySolutionId(solution.ID)
+		if err != nil {
+			return nil, err
+		}
+		solution.Votes = votes
+
+		solutions = append(solutions, solution)
+	}
+
+	return solutions, rows.Err()
+}
+
+func (repo *PGProblemRepository) DeleteTestCases(problemId int) error {
+	stmt := `DELETE FROM problem_test_cases WHERE problem_id = $1`
+	_, err := repo.db.Exec(stmt, problemId)
+	return err
+}
+
+func (repo *PGProblemRepository) CreateTestCases(testCases []*entities.ProblemTestCase) error {
+	stmt := `INSERT INTO problem_test_cases (problem_id, order_index, input, output)
+             VALUES ($1, $2, $3, $4)`
+
+	for _, tc := range testCases {
+		_, err := repo.db.Exec(stmt, tc.ProblemID, tc.OrderIndex, tc.Input, tc.Output)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
